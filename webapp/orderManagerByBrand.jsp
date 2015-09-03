@@ -68,7 +68,7 @@
 	.brandHeader {
 		background-color:#c8c8c8;
 		font-size:20px;
-		font-weight:500;
+		font-weight:800;
 		border-top:2px solid #ccc;
 	}
 </style>
@@ -85,26 +85,28 @@
 				<table id="cart-list" style="text-align: center; padding-top:0px;">
 					<tbody>
 					<c:forEach var="brandPack" items="${brandPacks}">
-						<tr><td colspan="9" class="brandHeader"><span>${brandPack.key}</span></td></tr>
+						<tr><td colspan="10" class="brandHeader"><span>${brandPack.key}</span></td></tr>
 						<tr>
+							<th><input id="select-all-checkbox" type="checkbox" ></th>
 							<th>주문자</th>
-							<th colspan="2">상품설명</th>
+							<th colspan="2">상품명</th>
 							<th style="width:35px">사이즈</th>
-							<th>원가</th>
-							<th style="width:45px;">주문수량</th>
-							<th>승인수량</th>
+							<th>판매가</th>
+							<th style="width:45px;">주문</th>
+							<th>사입수량</th>
 							<th>주문금액</th>
 							<th> </th>
 						</tr>
 						<c:forEach var="item" items="${brandPack.items}">
 							<tr data-id="${item.itemId}">
+								<td><input class="item-check" type="checkbox" onclick="calcSelectedOrder()"></td>
 								<td><span class="item-customer">${item.customer.customerId}</span></td>
 								<td class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="item-image" src="/image/products/${item.product.productImage}"></a></td>
 								<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name">${item.product.productName}</span></a></td>
 								<td><span class="item-size">${item.size}</span></td>
 								<td><span class="item-price">${item.product.productPrice}</span></td>
-								<td><span>${item.quantity}</span></td>
-								<td><input style="width:40px;" type="number" class ="item-quantity" name="quantity" value ="${item.quantity}"/>
+								<td><span class="ordered-quantity">${item.quantity}</span></td>
+								<td><input style="width:40px;" type="number" class ="item-quantity" name="quantity" value ="${item.quantity}" onchange="checkValidQuantity(this)"/>
 								<td><span class="order-price">${item.price}</span></td>
 								<td><input type="button" class="success" value="승인">
 								<input type="button" class="reject" value="삭제"></td>
@@ -112,7 +114,27 @@
 						</c:forEach>
 					</c:forEach>
 					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="10">
+								<div id="total-quantity" style="float:right; padding:15px; font-size:15px;">사입수량 :
+									<span style="font-weight:800;">0</span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="10">
+								<div id="total-price" style="float:right; padding:15px; font-size:15px;">사입금액 :
+									<span style="font-weight:800;">0</span>
+								</div>
+							</td>
+						</tr>
+					</tfoot>
 				</table>
+				<div id="button-group" style="padding:25px; margin-bottom:25px;">
+					<button id="ordersheet-button" class="btn" style="padding:15px; float:right; background:#EA6576; border-radius:2px; border:0; font-size:20px;">주문서출력</button>
+					<button id="submit-button" class="btn" style="padding:15px; float:right; background:#EA6576; border-radius:2px; border:0; font-size:20px;">사입처리</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -121,26 +143,35 @@
 			var i;
 			var checkBtns = document.querySelectorAll('.success');
 			for (i = 0; i < checkBtns.length; i++) {
-				checkBtns[i].addEventListener('click', checkOrder, false);
+				checkBtns[i].addEventListener('click', checkOrders, false);
 			}
 			var rejectBtns = document.querySelectorAll('.reject');
 			for (i = 0; i < rejectBtns.length; i++) {
 				rejectBtns[i].addEventListener('click', rejectOrder, false);
 			}
+			document.querySelector("#submit-button").addEventListener('click', checkOrders, false);
+			document.querySelector("#ordersheet-button").addEventListener('click', viewOrdersheet, false);
 		}, false);
 
-		function checkOrder(e) {
-			var itemId = e.target.parentNode.parentNode.getAttribute('data-id');
-			var quantity = e.target.parentElement.parentElement.querySelector(".item-quantity").value;
-			ydbaobao.ajax({
-				method: "post",
-				param: "quantity="+quantity,
-				url: "/admin/orders/accept/"+itemId,
-				success: function(req){
-					alert(req.responseText);
-					window.location.href="/admin/orders/brands";
+		function checkOrders(e) {
+			var checkList = document.querySelectorAll('.item-check');
+			var checkLength = checkList.length;
+			var itemlist = [];
+			var quantitylist = [];
+			for(var i = 0; i < checkLength; i++) {
+				if(checkList[i].checked) {
+					itemlist.push(checkList[i].parentNode.parentNode.getAttribute('data-id')*1);
+					quantitylist.push(checkList[i].parentNode.parentNode.querySelector('.item-quantity').value*1);
 				}
-			});
+			}
+			if (itemlist.length === 0) {
+				alert("선택된 상품이 없습니다.");
+			} else {
+				ydbaobao.post({
+					params : {itemList : itemlist, quantityList : quantitylist},
+					path: "/admin/orders/accept"
+				});
+			}
 		}
 		
 		function rejectOrder(e) {
@@ -153,6 +184,71 @@
 					window.location.href="/admin/orders/brands";
 				}
 			});
+		}
+		
+		document.querySelector('#select-all-checkbox').addEventListener('click', function(e) {
+			var checkedItems = document.querySelectorAll('.item-check');
+			var length = checkedItems.length;
+
+			//전체선택 해제
+			if(e.target.classList.contains('checked')) {
+				e.target.classList.remove('checked');
+				for(var i = 0; i < length; i++) {
+					checkedItems[i].checked = false;
+				}
+				calcSelectedOrder();
+				return;
+			}
+
+			e.target.classList.add('checked');
+			for(var j = 0; j < length; j++) {
+				checkedItems[j].checked = true;
+			}
+			calcSelectedOrder();
+		});
+		
+		function checkValidQuantity(e) {
+			var quantity = e.value * 1;
+			var orderedQuantity = e.parentNode.parentNode.querySelector('.ordered-quantity').textContent * 1;
+			if (orderedQuantity < quantity) {
+				e.value = orderedQuantity;
+			}
+			calcSelectedOrder();
+		}
+		
+		function calcSelectedOrder() {
+			var checkList = document.querySelectorAll('.item-check');
+			var checkLength = checkList.length;
+			var totalPrice = 0;
+			var totalQuantity = 0;
+			var thisQuantity = 0;
+			for(var i = 0; i < checkLength; i++) {
+				if(checkList[i].checked) {
+					thisQuantity = checkList[i].parentNode.parentNode.querySelector('.item-quantity').value*1;
+					totalPrice += checkList[i].parentNode.parentNode.querySelector('.item-price').textContent * thisQuantity;
+					totalQuantity += checkList[i].parentNode.parentNode.querySelector('.item-quantity').value*1;
+				}
+			}
+			document.querySelector('#total-price span').textContent = totalPrice;
+			document.querySelector('#total-quantity span').textContent = totalQuantity;
+		}
+		
+		function viewOrdersheet() {
+			var checkList = document.querySelectorAll('.item-check');
+			var checkLength = checkList.length;
+			var itemIdlist = [];
+			for(var i = 0; i < checkLength; i++) {
+				if(checkList[i].checked) {
+					itemIdlist.push(checkList[i].parentNode.parentNode.getAttribute('data-id')*1);
+					itemIdlist.push(14);
+					itemIdlist.push(15);
+				}
+			}
+			if (itemIdlist.length === 0) {
+				alert("선택된 상품이 없습니다.");
+			} else {
+				window.open("/admin/orders/ordersheet?ids="+itemIdlist);
+			}
 		}
 		
 	</script>

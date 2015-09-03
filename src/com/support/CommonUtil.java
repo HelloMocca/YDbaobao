@@ -160,4 +160,10 @@ public class CommonUtil {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return sdf.format(today);
 	}
+	
+	public static String getDate() {
+		Date today = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		return sdf.format(today);
+	}
 }

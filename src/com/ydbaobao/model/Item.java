@@ -8,9 +8,11 @@ public class Item {
 	private int quantity;
 	private String itemStatus;
 	private int price;
+	private Payment payment;
 	/**
 	 * 카트 		: "I"
 	 * 주문요청 	: "S"
+	 * 사입처리         : "P"
 	 * 취소 		: "C"
 	 * 반려 		: "R"
 	 */
@@ -31,6 +33,17 @@ public class Item {
 		this.quantity = quantity;
 		this.itemStatus = itemStatus;
 		this.price = price;
+	}
+	
+	public Item(int itemId, Customer customer, Product product, String size, int quantity, String itemStatus, int price, Payment payment) {
+		this.itemId = itemId;
+		this.customer = customer;
+		this.product = product;
+		this.size = size;
+		this.quantity = quantity;
+		this.itemStatus = itemStatus;
+		this.price = price;
+		this.payment = payment;
 	}
 
 	public int getItemId() {
@@ -87,6 +100,14 @@ public class Item {
 
 	public void setPrice(int price) {
 		this.price = price;
+	}
+	
+	public Payment getPayment() {
+		return payment;
+	}
+	
+	public void setPayment(Payment payment) {
+		this.payment = payment;
 	}
 
 	@Override

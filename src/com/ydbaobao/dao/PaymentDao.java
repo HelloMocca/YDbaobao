@@ -27,13 +27,22 @@ public class PaymentDao extends JdbcDaoSupport {
 		setDataSource(dataSource);
 	}
 	
+	private int getRandomId() {
+		return (int) (Math.random() * 2000000000) + 1;
+	}
+	
 	public int createPayment(Payment payment) {
 		String sql = "insert into PAYMENTS value(default, ?, ?, ?, ?)";
 		if (payment.getPaymentDate() != null) {
 			sql = "insert into PAYMENTS value(default, ?, ?, ?, ?)";
 			return getJdbcTemplate().update(sql, payment.getCustomer().getCustomerId(), payment.getPaymentType(), payment.getAmount(), payment.getPaymentDate());
 		}
-		return getJdbcTemplate().update(sql, payment.getCustomer().getCustomerId(), payment.getPaymentType(), payment.getAmount(), CommonUtil.getDatetime());
+		return getJdbcTemplate().update(sql, payment.getCustomer().getCustomerId(), payment.getPaymentType(), payment.getAmount(), CommonUtil.getDate());
+	}
+	
+	public int updatePayment(Payment payment) {
+		String sql = "update PAYMENTS set paymentType = ?, amount = ? where paymentId = ?";
+		return getJdbcTemplate().update(sql, payment.getPaymentType(), payment.getAmount(), payment.getPaymentId());
 	}
 
 	public List<Payment> readPaymentsByCustomerId(String customerId) {
@@ -42,6 +51,7 @@ public class PaymentDao extends JdbcDaoSupport {
 			@Override
 			public Payment mapRow(ResultSet rs, int rowNum) throws SQLException {
 				return new Payment(
+						rs.getInt("paymentId"),
 						new Customer(rs.getString("customerId")),
 						rs.getString("paymentType"), 
 						rs.getInt("amount"),
@@ -49,5 +59,26 @@ public class PaymentDao extends JdbcDaoSupport {
 			}
 		};
 		return getJdbcTemplate().query(sql, rm, customerId);
+	}
+	
+	public Payment readPaymentByCustomerIdPaymentDate(String customerId, String date) {
+		String sql = "select *, DATE_FORMAT(PAYMENTS.paymentDate, '%Y-%c-%e') as paymentDate from PAYMENTS where customerId = ? AND paymentDate = ?";
+		RowMapper<Payment> rm = new RowMapper<Payment>() {
+			@Override
+			public Payment mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Payment(
+						rs.getInt("paymentId"),
+						new Customer(rs.getString("customerId")),
+						rs.getString("paymentType"), 
+						rs.getInt("amount"),
+						rs.getString("paymentDate"));
+			}
+		};
+		List<Payment> payments = getJdbcTemplate().query(sql, rm, customerId, date);
+		if (payments.size() == 0) {
+			createPayment(new Payment(new Customer(customerId), "S", 0, date));
+			payments = getJdbcTemplate().query(sql, rm, customerId, date);
+		}
+		return payments.get(0);
 	}
 }

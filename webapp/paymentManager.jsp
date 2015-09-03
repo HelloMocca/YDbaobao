@@ -129,7 +129,7 @@
 				switch (payment.paymentType) {
 					case "P": table = document.querySelector('#purchase-table tbody');
 								totalPurchase += payment.amount;
-								lastTd = "<td><button class='btn'><i class='fa fa-navicon'></i>  주문서보기</button></td>";
+								lastTd = "<td><a class='btn' href='/admin/payment/receipt/"+payment.paymentId+"'><i class='fa fa-navicon'></i>  주문서보기</a></td>";
 								break;
 					case "I": table = document.querySelector('#pay-table tbody');
 								totalPay += payment.amount;

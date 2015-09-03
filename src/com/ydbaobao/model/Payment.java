@@ -22,6 +22,10 @@ public class Payment {
 	public Payment(Customer customer, String paymentType, int amount) {
 		this(customer, paymentType, amount, null);
 	}
+	
+	public Payment(int paymentId, String paymentType, int amount) {
+		this(paymentId, null, paymentType, amount, null);
+	}
 
 	public int getPaymentId() {
 		return paymentId;

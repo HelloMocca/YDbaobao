@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.support.CommonUtil;
 import com.ydbaobao.dao.ItemDao;
 import com.ydbaobao.dao.ProductDao;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.model.Payment;
 import com.ydbaobao.model.Product;
+import com.ydbaobao.model.Customer;
 
 @Service
 @Transactional
@@ -91,6 +93,11 @@ public class ItemService {
 		}
 	}
 
+	/**
+	 * itemId를 받아 해당 아이템의 가격 변경
+	 * (구매자의 할인율 적용)
+	 * @param itemId
+	 */
 	public void updateItemPrice(int itemId) {
 		Item item = itemDao.readItem(itemId);
 		int price = productService.readByDiscount(item.getProduct().getProductId(), item.getCustomer()).getProductPrice();
@@ -151,6 +158,11 @@ public class ItemService {
 		product.setProductPrice(productService.readByDiscount(product.getProductId(), item.getCustomer()).getProductPrice());
 		return item;
 	}
+
+
+	public List<Item> readOrderedItemsByPaymentId(int paymentId) {
+		return itemDao.readItemsByPaymentId(paymentId);
+	}
 	
 	public void deleteItem(String customerId, int itemId) {
 		if(!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
@@ -170,18 +182,44 @@ public class ItemService {
 		itemDao.updateItemQuantity(itemId, quantity);
 	}
 
-	public boolean acceptOrder(int itemId, int quantity) {
-		Item item = itemDao.readItem(itemId);
-		if (item == null || item.getQuantity() < quantity)
-			return false;
-		int price = productService.readByDiscount(item.getProduct().getProductId(), item.getCustomer()).getProductPrice();
-		paymentService.createPayment(new Payment(item.getCustomer(), "P", price * quantity));
-		itemDao.addItemQuantity(itemId, -quantity);
-		if(item.getQuantity()-quantity == 0) {
-			itemDao.deleteItem(itemId);
-			return true;
+	public boolean acceptOrder(int[] itemIdList, int[] quantityList) {
+		Item item;
+		int price = 0;
+		int quantity;
+		int totalPrice;
+		Payment payment;
+		List<Customer> customers = new ArrayList<Customer>();
+		List<Item> items = new ArrayList<Item>();
+		//customer Listing
+		for (int i = 0; i < itemIdList.length; i++) {
+			item = itemDao.readItem(itemIdList[i]);
+			items.add(item);
+			if(!customers.contains(item.getCustomer())) {
+				customers.add(item.getCustomer());
+			}
 		}
-		itemDao.updateItemPrice(item.getItemId(), (item.getQuantity()-quantity) * price);
+		for (Customer thisCustomer : customers) {
+			int i = 0;
+			price = 0;
+			totalPrice = 0;
+			payment = paymentService.readPaymentByCustomerIdDate(thisCustomer.getCustomerId(), CommonUtil.getDate());
+			for (Item thisItem : items) {	
+				if (thisItem.getCustomer().equals(thisCustomer)) {
+					quantity = quantityList[i];
+					price = productService.readByDiscount(thisItem.getProduct().getProductId(), thisItem.getCustomer()).getProductPrice();
+					totalPrice += price * quantity;
+					itemDao.createItem(thisCustomer.getCustomerId(), thisItem.getProduct().getProductId(), thisItem.getSize(), quantity, "P", price * quantity, payment.getPaymentId());
+					itemDao.addItemQuantity(thisItem.getItemId(), -quantity);
+					if(thisItem.getQuantity()-quantity == 0) {
+						itemDao.deleteItem(thisItem.getItemId());
+					} else {
+						itemDao.updateItemPrice(thisItem.getItemId(), (thisItem.getQuantity()-quantity) * price);
+					}
+				}
+				i++;
+			}
+			paymentService.updatePayment(new Payment(payment.getPaymentId(), "P", payment.getAmount() +  totalPrice));
+		}
 		return true;
 	}
 

@@ -238,7 +238,6 @@
 
 
 	function deleteCheckedItems(className){
-		debugger;
 		var checkedItems = document.querySelectorAll(className);
 		var length = checkedItems.length;
 		for(var i = 0; i < length; i++) {
@@ -287,7 +286,6 @@
 		var checkList = document.querySelectorAll('.item-check');
 		var checkLength = checkList.length;
 		var totalPrice = 0;
-		var paramList = [];
 		for(var i = 0; i < checkLength; i++) {
 			if(checkList[i].checked) {
 				totalPrice += checkList[i].parentNode.parentNode.querySelector('.order-price').textContent.replace(/,/g,"")*1;

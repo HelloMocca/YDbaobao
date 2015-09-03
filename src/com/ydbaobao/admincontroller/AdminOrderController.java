@@ -25,7 +25,7 @@ public class AdminOrderController {
 	private ItemService itemService;
 
 	/**
-	 * 관리자 화면에서 모든 브랜드별 주문 리스트 받기
+	 * 주문된 브랜드의 리스트 출력 페이지 요청
 	 * @param model
 	 * @return
 	 */
@@ -35,6 +35,12 @@ public class AdminOrderController {
 		return "orderManagerBrandList";
 	}
 	
+	/**
+	 * brandId에 해당하는 브랜드의 주문 목록 페이지 요청
+	 * @param brandId
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(value = "/brand/{brandId}", method = RequestMethod.GET)
 	public String manageOrderByBrandId(@PathVariable int brandId, Model model) {
 		model.addAttribute("brandPacks", itemService.readOrderedItemsByBrandId(brandId));
@@ -70,10 +76,9 @@ public class AdminOrderController {
 	 * @param orderStatus
 	 * @return
 	 */
-	@RequestMapping(value = "/accept/{itemId}", method = RequestMethod.POST)
-	public ResponseEntity<Object> acceptOrder(@PathVariable int itemId, @RequestParam int quantity) {
-		if(!itemService.acceptOrder(itemId, quantity))
-			return JSONResponseUtil.getJSONResponse("유효하지 않은 주문입니다.", HttpStatus.OK);
+	@RequestMapping(value = "/accept", method = RequestMethod.POST)
+	public ResponseEntity<Object> acceptOrder(@RequestParam int[] itemList, @RequestParam int[] quantityList) {
+		itemService.acceptOrder(itemList, quantityList);
 		return JSONResponseUtil.getJSONResponse("주문승인", HttpStatus.OK);
 	}
 	
@@ -83,4 +88,10 @@ public class AdminOrderController {
 			return JSONResponseUtil.getJSONResponse("유효하지 않은 주문입니다.", HttpStatus.OK);
 		return JSONResponseUtil.getJSONResponse("주문반려", HttpStatus.OK);
 	}
+	
+	@RequestMapping(value = "/ordersheet")
+	public String requestOrdersheet() {
+		return "ordersheet";
+	}
+	
 }

@@ -98,9 +98,6 @@ public class OrderController {
 	
 	@RequestMapping(value = "/cancel/{itemId}", method = RequestMethod.POST)
 	public ResponseEntity<Object> cancelOrder(@PathVariable int itemId) {
-		//if(!itemService.rejectOrder(itemId))
-		//	return JSONResponseUtil.getJSONResponse("유효하지 않은 주문입니다.", HttpStatus.OK);
-		
 		Date date = new Date();
 		SimpleDateFormat ampmFormat = new SimpleDateFormat("a");
 		SimpleDateFormat hourFormat = new SimpleDateFormat("hh");

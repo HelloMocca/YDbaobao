@@ -89,7 +89,7 @@
 							<th>주문자</th>
 							<th colspan="2">상품설명</th>
 							<th style="width:35px">사이즈</th>
-							<th>원가</th>
+							<th>판매가</th>
 							<th  style="width:40px;">주문수량</th>
 							<th>승인수량</th>
 							<th>주문금액</th>

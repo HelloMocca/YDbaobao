@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.support.JSONResponseUtil;
 import com.ydbaobao.model.Customer;
 import com.ydbaobao.model.Payment;
+import com.ydbaobao.service.ItemService;
 import com.ydbaobao.service.PaymentService;
 
 @Controller
@@ -23,6 +24,9 @@ public class AdminPaymentController {
 	
 	@Resource
 	private PaymentService paymentService;
+	
+	@Resource
+	private ItemService itemService;
 
 	@RequestMapping(value = "/{customerId}", method = RequestMethod.GET)
 	public String manageOrder(@PathVariable String customerId, Model model) {
@@ -42,4 +46,11 @@ public class AdminPaymentController {
 		}
 		return "fail";
 	}
+
+	@RequestMapping(value = "/receipt/{paymentId}")
+	public String requestReceiptByPaymentId(@PathVariable int paymentId, Model model) {
+		model.addAttribute("items", itemService.readOrderedItemsByPaymentId(paymentId));
+		return "receipt";
+	}
+	
 }

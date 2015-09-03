@@ -22,6 +22,7 @@ import org.springframework.stereotype.Repository;
 import com.ydbaobao.model.Brand;
 import com.ydbaobao.model.Customer;
 import com.ydbaobao.model.Item;
+import com.ydbaobao.model.Payment;
 import com.ydbaobao.model.Product;
 
 @Repository
@@ -95,6 +96,25 @@ public class ItemDao extends JdbcDaoSupport {
 		return keyHolder.getKey().intValue();
 	}
 	
+	public int createItem(final String customerId, final int productId, final String size, final int quantity, final String itemStatus, final int price,  final int paymentId) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		final String sql = "insert into ITEMS (customerId, productId, size, quantity, itemStatus, price, paymentId) values(?, ?, ?, ?, ?, ?, ?)";
+		getJdbcTemplate().update(new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+				ps.setString(1, customerId);
+				ps.setInt(2, productId);
+				ps.setString(3, size);
+				ps.setInt(4, quantity);
+				ps.setString(5, itemStatus);
+				ps.setInt(6, price);
+				ps.setInt(7, paymentId);
+				return ps;
+			}
+		}, keyHolder);
+		return keyHolder.getKey().intValue();
+	}
+	
 	public Item readItem(int itemId) {
 		String sql = "select * from ITEMS A, PRODUCTS B where A.itemId=? AND A.productId = B.productId";
 		RowMapper<Item> rm = new RowMapper<Item>() {
@@ -145,7 +165,17 @@ public class ItemDao extends JdbcDaoSupport {
 		String sql = "update ITEMS set quantity = ? where itemId = ?";
 		getJdbcTemplate().update(sql, quantity, itemId);
 	}
-
+	
+	/**
+	 * Item의 상태를 변환
+	 * 카트 		: "I"
+	 * 주문요청 	: "S"
+	 * 사입처리         : "P"
+	 * 취소 		: "C"
+	 * 반려 		: "R"
+	 * @param itemId
+	 * @param itemStatus
+	 */
 	public void updateItemStatus(int itemId, String itemStatus) {
 		String sql = "update ITEMS set itemStatus = ? where itemId = ?";
 		getJdbcTemplate().update(sql, itemStatus, itemId);
@@ -268,5 +298,24 @@ public class ItemDao extends JdbcDaoSupport {
 			}
 		};
 		return getJdbcTemplate().query(sql, rm);
+	}
+
+	public List<Item> readItemsByPaymentId(int paymentId) {
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C, PAYMENTS D where A.itemStatus = 'P' AND A.productId = B.productId AND B.brandId = C.brandId AND A.paymentId = D.paymentId AND D.paymentId = ?";
+		RowMapper<Item> rm = new RowMapper<Item>() {
+			@Override
+			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Item(
+						rs.getInt("itemId"), 
+						new Customer(rs.getString("customerId")),
+						new Product(rs.getInt("productId"),rs.getString("productName"), 
+								rs.getInt("productPrice"), rs.getString("productImage"), 
+								rs.getString("productSize"), rs.getInt("isSoldout"), 
+						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("size"), 
+						rs.getInt("quantity"), rs.getString("itemStatus"), 
+						rs.getInt("price"), new Payment(rs.getInt("paymentId"), new Customer(rs.getString("customerId")), rs.getString("paymentType"), rs.getInt("amount"), rs.getString("paymentDate")));
+			}
+		};
+		return getJdbcTemplate().query(sql, rm, paymentId);
 	}
 }
