@@ -167,9 +167,20 @@
 			if (itemlist.length === 0) {
 				alert("선택된 상품이 없습니다.");
 			} else {
-				ydbaobao.post({
-					params : {itemList : itemlist, quantityList : quantitylist},
-					path: "/admin/orders/accept"
+				ydbaobao.ajax({
+					method:"post",
+					url:"/admin/orders/accept",
+					param: "itemList="+itemlist+"&quantityList="+quantitylist,
+					success: function(req) {
+						if (req.responseText === "success") {
+							alert("사입처리 완료.");
+							for(var i = 0; i < checkLength; i++) { //처리된 아이템 제거
+								if(checkList[i].checked) {
+									checkList[i].parentNode.parentNode.remove();
+								}
+							}
+						}
+					}
 				});
 			}
 		}
@@ -247,7 +258,7 @@
 			if (itemIdlist.length === 0) {
 				alert("선택된 상품이 없습니다.");
 			} else {
-				window.open("/admin/orders/ordersheet?ids="+itemIdlist);
+				window.open("/admin/orders/ordersheet/"+itemIdlist);
 			}
 		}
 		

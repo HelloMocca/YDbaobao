@@ -318,4 +318,28 @@ public class ItemDao extends JdbcDaoSupport {
 		};
 		return getJdbcTemplate().query(sql, rm, paymentId);
 	}
+
+	public List<Item> readItemByItemIds(String[] itemIds) {
+		String condition = "";
+		for (int i = 0; i < itemIds.length; i++) {
+			if (i != 0) condition += " OR ";
+			condition += "A.itemId = "+itemIds[i];
+		}
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.itemStatus = 'S' AND A.productId = B.productId AND B.brandId = C.brandId AND ( "+condition+" )";
+		RowMapper<Item> rm = new RowMapper<Item>() {
+			@Override
+			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Item(
+						rs.getInt("itemId"), 
+						new Customer(rs.getString("customerId")),
+						new Product(rs.getInt("productId"),rs.getString("productName"), 
+								rs.getInt("productPrice"), rs.getString("productImage"), 
+								rs.getString("productSize"), rs.getInt("isSoldout"), 
+						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("size"), 
+						rs.getInt("quantity"), rs.getString("itemStatus"), 
+						rs.getInt("price"), null);
+			}
+		};
+		return getJdbcTemplate().query(sql, rm);
+	}
 }

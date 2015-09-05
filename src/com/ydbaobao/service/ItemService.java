@@ -182,7 +182,7 @@ public class ItemService {
 		itemDao.updateItemQuantity(itemId, quantity);
 	}
 
-	public boolean acceptOrder(int[] itemIdList, int[] quantityList) {
+	public boolean acceptOrder(String[] itemIdList, String[] quantityList) {
 		Item item;
 		int price = 0;
 		int quantity;
@@ -192,7 +192,7 @@ public class ItemService {
 		List<Item> items = new ArrayList<Item>();
 		//customer Listing
 		for (int i = 0; i < itemIdList.length; i++) {
-			item = itemDao.readItem(itemIdList[i]);
+			item = itemDao.readItem(Integer.valueOf(itemIdList[i]));
 			items.add(item);
 			if(!customers.contains(item.getCustomer())) {
 				customers.add(item.getCustomer());
@@ -205,7 +205,7 @@ public class ItemService {
 			payment = paymentService.readPaymentByCustomerIdDate(thisCustomer.getCustomerId(), CommonUtil.getDate());
 			for (Item thisItem : items) {	
 				if (thisItem.getCustomer().equals(thisCustomer)) {
-					quantity = quantityList[i];
+					quantity = Integer.valueOf(quantityList[i]);
 					price = productService.readByDiscount(thisItem.getProduct().getProductId(), thisItem.getCustomer()).getProductPrice();
 					totalPrice += price * quantity;
 					itemDao.createItem(thisCustomer.getCustomerId(), thisItem.getProduct().getProductId(), thisItem.getSize(), quantity, "P", price * quantity, payment.getPaymentId());
@@ -295,5 +295,9 @@ public class ItemService {
 		public void addItem(Item item) {
 			items.add(item);
 		}
+	}
+
+	public List<Item> readItemsByItemIds(String[] itemIds) {
+		return itemDao.readItemByItemIds(itemIds);
 	}
 }
