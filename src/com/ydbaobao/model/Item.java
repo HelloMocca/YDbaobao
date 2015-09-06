@@ -1,13 +1,14 @@
 package com.ydbaobao.model;
 
+import java.util.List;
+
 public class Item {
 	private int itemId;
 	private Customer customer;
 	private Product product;
-	private String size;
-	private int quantity;
 	private String itemStatus;
 	private int price;
+	private List<Quantity> quantities;
 	private Payment payment;
 	/**
 	 * 카트 		: "I"
@@ -16,31 +17,29 @@ public class Item {
 	 * 취소 		: "C"
 	 * 반려 		: "R"
 	 */
+	public static String CART = "I";
+	public static String ORDERED = "S";
 	
 	public Item() {
 		
 	}
 	
 	public Item(int itemId) {
-		this(itemId, null, null, null, 0, "", 0);
+		this(itemId, null, null, "", 0);
 	}
 
-	public Item(int itemId, Customer customer, Product product, String size, int quantity, String itemStatus, int price) {
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price) {
 		this.itemId = itemId;
 		this.customer = customer;
 		this.product = product;
-		this.size = size;
-		this.quantity = quantity;
 		this.itemStatus = itemStatus;
 		this.price = price;
 	}
 	
-	public Item(int itemId, Customer customer, Product product, String size, int quantity, String itemStatus, int price, Payment payment) {
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Payment payment) {
 		this.itemId = itemId;
 		this.customer = customer;
 		this.product = product;
-		this.size = size;
-		this.quantity = quantity;
 		this.itemStatus = itemStatus;
 		this.price = price;
 		this.payment = payment;
@@ -70,22 +69,6 @@ public class Item {
 		this.product = product;
 	}
 
-	public String getSize() {
-		return size;
-	}
-
-	public void setSize(String size) {
-		this.size = size;
-	}
-
-	public int getQuantity() {
-		return quantity;
-	}
-
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
-
 	public String getItemStatus() {
 		return itemStatus;
 	}
@@ -100,6 +83,14 @@ public class Item {
 
 	public void setPrice(int price) {
 		this.price = price;
+	}
+	
+	public List<Quantity> getQuantities() {
+		return quantities;
+	}
+	
+	public void setQuantities(List<Quantity> quantities) {
+		this.quantities = quantities;
 	}
 	
 	public Payment getPayment() {
@@ -121,8 +112,6 @@ public class Item {
 				+ ((itemStatus == null) ? 0 : itemStatus.hashCode());
 		result = prime * result + price;
 		result = prime * result + ((product == null) ? 0 : product.hashCode());
-		result = prime * result + quantity;
-		result = prime * result + ((size == null) ? 0 : size.hashCode());
 		return result;
 	}
 
@@ -154,21 +143,12 @@ public class Item {
 				return false;
 		} else if (!product.equals(other.product))
 			return false;
-		if (quantity != other.quantity)
-			return false;
-		if (size == null) {
-			if (other.size != null)
-				return false;
-		} else if (!size.equals(other.size))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Item [itemId=" + itemId + ", customer=" + customer
-				+ ", product=" + product + ", size=" + size + ", quantity="
-				+ quantity + ", itemStatus=" + itemStatus + ", price=" + price
-				+ "]";
+		return "Item [itemId=" + itemId + ", customer=" + customer + ", product=" + product + ", itemStatus="
+				+ itemStatus + ", price=" + price + ", quantities=" + quantities + ", payment=" + payment + "]";
 	}
 }

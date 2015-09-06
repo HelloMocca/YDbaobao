@@ -11,6 +11,7 @@
 <style>
  #customer-table {
  	text-align:center;
+ 	font-size:12px;
  }
  #customer-table .btn {
  	border:0;
@@ -96,7 +97,6 @@
 							</td>
 							<td>${customer.customerCreateDate}</td>
 							<td>
-								<a href="/admin/orders/customer/${customer.customerId}"><button class='btn btn-order'><i class='fa fa-list'></i> 사입리스트</button></a>
 								<a href="/admin/payment/${customer.customerId}"><button class='btn btn-payment'><i class='fa fa-list'></i>  출납관리</button></a>
 								<a href="/admin/customers/${customer.customerId}"><button class="btn btn-warn"><i class="fa fa-info-circle"></i>  상세정보</button></a>
 								<a href="#"><button class="btn btn-err" onclick="deleteCustomer('${customer.customerId}')"><i class="fa fa-remove"></i>  삭제</button></a>

@@ -49,7 +49,7 @@ public class AdminProductController {
 	 */
 	@RequestMapping(value = "/regist", method = RequestMethod.GET)
 	public String registProducts(Model model) {
-		model.addAttribute("product", new Product());
+		model.addAttribute("product", new Product()); //check is this available
 		model.addAttribute("brandList", brandService.readBrands());
 		return "productRegistration";
 	}

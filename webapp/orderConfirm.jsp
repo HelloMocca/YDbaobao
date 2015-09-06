@@ -46,6 +46,20 @@
 		color: red;
 		font-weight: bold;
 	}
+	
+	.quantity-container span{
+		width:35px;
+		display:inline-block;
+	}
+	
+	.item-quantity {
+		font-weight:bold;
+	}
+	
+	#order-cancel-btn {
+		background-color:#5D5D5D;
+		float:left;
+	}
 </style>
 </head>
 <body>
@@ -68,22 +82,27 @@
 				<table id="cart-list">
 					<thead>
 						<tr>
-							<th colspan="2">상품설명</th>
-							<th>사이즈</th>
+							<th colspan="2">상품명</th>
 							<th>상품가격</th>
-							<th>수량</th>
+							<th>사이즈/수량</th>
 							<th>주문금액</th>
 						</tr>
 					</thead>
 					<tbody>
 					<c:forEach var="item" items="${items}">
-						<tr data-id="${item.itemId}">
+						<tr id="item_${item.itemId}" class="item-container" data-id="${item.itemId}">
 							<td class="item-image-container"><img class="item-image" src="/image/products/${item.product.productImage}"></td>
 							<td class="item-name-container"><span class="item-name">${item.product.productName}</span></td>
-							<td><span class="item-size">${item.size}</span></td>
-							<td><span class="item-price">${item.product.productPrice}</span></td>
-							<td><span class="item-quantity">${item.quantity}</span></td>
-							<td><span class="order-price">${item.product.productPrice * item.quantity}</span></td>
+							<td><span class="product-price">${item.product.productPrice}</span></td>
+							<td class="quantity-container">
+								<c:forEach var="quantity" items="${item.quantities}">
+									<div>
+										<span>${quantity.size}</span>
+										<span class="item-quantity">${quantity.value}</span>
+									</div>
+								</c:forEach>
+							</td>
+							<td><span class="order-price">${item.product.productPrice}</span></td>
 						</tr>
 					</c:forEach>
 					</tbody>
@@ -111,6 +130,11 @@
 
 	<script>
 	window.addEventListener('load', function() {
+		var itemEl = document.querySelectorAll('.item-container');
+		for (i = 0; i < itemEl.length; i++) {
+			calcItemPrice(itemEl[i].dataset.id);
+		}
+		
 		document.querySelector('#order-btn').addEventListener('click', function() {
 			var checkList = document.querySelectorAll('tbody tr');
 			var checkLength = checkList.length;
@@ -123,7 +147,7 @@
 			order(param);
 		}, false);
 		document.querySelector('#order-cancel-btn').addEventListener('click', function() {
-			window.location.href = 'shop/carts';
+			window.location.href = '/shop/carts';
 		}, false);
 
 		addItemsPrice();
@@ -140,8 +164,10 @@
 			url : '/shop/orders',
 			param : param,
 			success : function(req) {
-				alert('주문요청이 완료되었습니다.');
-				window.location.href = '/';
+				if (req.responseText == "OK") {
+					alert('주문요청이 완료되었습니다.');
+					window.location.href = '/shop/orders';
+				}
 			}
 		});
 	}
@@ -169,6 +195,18 @@
 	function totalPriceWithComma() {
 		 	var el = document.querySelector('#total-price span');
 		 	el.textContent = parseInt(el.textContent.replace(",", "")).toLocaleString().split(".")[0];
+	}
+	
+	function calcItemPrice(itemId) {
+		var itemEl = document.querySelector("#item_"+itemId);
+		var productPrice = itemEl.querySelector(".product-price").textContent * 1;
+		var price = 0;
+		var quantities = itemEl.querySelectorAll(".item-quantity");
+		for (var i = 0; i < quantities.length; i++) {
+			price += quantities[i].textContent * productPrice;
+		}
+		itemEl.querySelector(".order-price").textContent = price;
+		addItemsPrice();
 	}
 	</script>
 	<script src="/js/ydbaobao.js"></script>

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.support.JSONResponseUtil;
 import com.support.ServletRequestUtil;
@@ -50,18 +51,19 @@ public class OrderController {
 	}
 	
 	/**
-	 * 장바구니에서 주문요청 페이지호출
+	 * 장바구니에서 주문확인 페이지호출
 	 * @param itemList
 	 * @param model
 	 * @return
 	 */
 	@RequestMapping(value = "/confirm", method = RequestMethod.POST)
 	public String orderConfirm(@RequestParam int[] itemList, Model model) {
-		List<Item> list = new ArrayList<Item>();
+		List<Item> items = new ArrayList<Item>();
 		for (int itemId : itemList) {
-			list.add(itemService.readItemByItemId(itemId));
+			items.add(itemService.readItemByItemId(itemId));
 		}
-		model.addAttribute("items", list);
+		model.addAttribute("categories", categoryService.readWithoutUnclassifiedCategory());
+		model.addAttribute("items", items);
 		return "orderConfirm";
 	}
 	
@@ -90,10 +92,10 @@ public class OrderController {
 	 * @throws IOException
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<Object> createOrder(@RequestParam int[] itemList, HttpSession session) throws IOException{
+	public @ResponseBody String createOrder(@RequestParam int[] itemList, HttpSession session) throws IOException{
 		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
-		itemService.requestItems(customerId, itemList);
-		return JSONResponseUtil.getJSONResponse("", HttpStatus.OK);
+		itemService.orderItems(customerId, itemList);
+		return "OK";
 	}
 	
 	@RequestMapping(value = "/cancel/{itemId}", method = RequestMethod.POST)

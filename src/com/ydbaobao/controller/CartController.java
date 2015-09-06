@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.support.JSONResponseUtil;
 import com.support.ServletRequestUtil;
+import com.ydbaobao.model.Item;
 import com.ydbaobao.service.CategoryService;
 import com.ydbaobao.service.ItemService;
 
@@ -32,6 +34,21 @@ public class CartController {
 	CategoryService categoryService;
 	
 	/**
+	 * 카트 페이지 호출 
+	 * @param model
+	 * @param session
+	 * @return
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String cartForm(Model model, HttpSession session) throws IOException {
+		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
+		model.addAttribute("items", itemService.readCartItems(customerId));
+		model.addAttribute("categories", categoryService.readWithoutUnclassifiedCategory());
+		return "cart";
+	}
+	
+	/**
 	 * 카트에 아이템 추가하기 
 	 * @param customerId
 	 * @param productId
@@ -43,38 +60,24 @@ public class CartController {
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<Object> createItem(HttpSession session, @RequestParam int productId, @RequestParam List<String> size, @RequestParam List<Integer> quantity) throws IOException {
 		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
-		itemService.createItems(customerId, size, quantity, productId, "I");
-		logger.debug("카트에 상품 추가");
+		itemService.createItems(customerId, size, quantity, productId, Item.CART);
 		return JSONResponseUtil.getJSONResponse("success", HttpStatus.OK);
 	}
 	
 	/**
-	 * 카트 페이지 호출 
-	 * @param model
-	 * @param session
-	 * @return
-	 * @throws IOException
-	 */
-	@RequestMapping(value = "", method = RequestMethod.GET)
-	public String cartForm(Model model, HttpSession session) throws IOException {
-		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
-		model.addAttribute("items", itemService.readCartItems(customerId, "I"));
-		model.addAttribute("categories", categoryService.readWithoutUnclassifiedCategory());
-		return "cart";
-	}
-	
-	/**
-	 * 카트 페이지 개수 수정 
+	 * 구매 수량 수정 
 	 * @param model
 	 * @param session
 	 * @return
 	 * @throws IOException
 	 */
 	@RequestMapping(value="/{itemId}", method = RequestMethod.PUT)
-	public ResponseEntity<Object> cartUpdate(@RequestParam int quantity, @PathVariable int itemId, Model model, HttpSession session) throws IOException {
+	public @ResponseBody String cartUpdate(@RequestParam int quantityId, @RequestParam int quantity, @PathVariable int itemId, Model model, HttpSession session) throws IOException {
 		String customerId = ServletRequestUtil.getCustomerIdFromSession(session); 
-		itemService.updateItemQuantity(itemId, quantity, customerId);
-		return JSONResponseUtil.getJSONResponse("", HttpStatus.OK);
+		if (itemService.updateItemQuantity(quantityId, quantity)) {
+			return "OK";
+		}
+		return "FAIL";
 	}
 	
 	/**

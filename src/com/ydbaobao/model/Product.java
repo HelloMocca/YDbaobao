@@ -12,8 +12,9 @@ public class Product {
 	private long productUpdateDate;
 	private String productSize;
 	private int isSoldout;
-
+	
 	public Product() {
+		
 	}
 
 	public Product(int productId) {

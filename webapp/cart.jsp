@@ -54,6 +54,20 @@
 	.item-quantity{
 		width: 45px;
 	}
+	
+	.btn.quantity-update-btn {
+		font-size:12px;
+		padding:2px;
+		background-color:#5D5D5D;
+	}
+	
+	.quantity-container div span {
+		display:inline-block;
+		width:50px;
+	}
+	.quantity-container div input{
+		width:35px;
+	}
 
 </style>
 </head>
@@ -77,38 +91,49 @@
 				<table id="cart-list">
 					<thead>
 						<tr>
-							<th style="width:60px;"><button id="select-all-btn">전체선택</button></th>
-							<th colspan="2">상품설명</th>
-							<th>사이즈</th>
-							<th>상품가격</th>
-							<th>수량</th>
-							<th>주문금액</th>
+							<th style="width:70px;"><button id="select-all-btn">전체선택</button></th>
+							<th colspan="2">상품명</th>
+							<th>판매가</th>
+							<th>사이즈/수량</th>
+							<th>금액</th>
 						</tr>
 					</thead>
 					<tbody>
 					<c:forEach var="item" items="${items}">
 						<c:choose>
 							<c:when test="${item.product.isSoldout eq 1}">
-								<tr data-id="${item.itemId}">
+								<tr id="item_${item.itemId}" class="item-container" data-id="${item.itemId}">
 									<td><input type="checkbox" class="soldout-item-check" disabled></td>
 									<td class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="item-image" src="/image/products/${item.product.productImage}"></a></td>
 									<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name">${item.product.productName}</span><span class="sold-out"> [품절]</span></a></td>
-									<td><span class="item-size">${item.size}</span></td>
-									<td><span class="item-price">${item.product.productPrice}</span></td>
-									<td><span class="item-quantity">${item.quantity}</span></td>
-									<td><span class="order-price">${item.product.productPrice * item.quantity}</span></td>
+									<td><span class="product-price">${item.product.productPrice}</span></td>
+									<td>
+										<c:forEach var="quantity" items="${item.quantities}">
+											<div>
+												<span>${quantity.size}</span>
+												<input class=".item-quantity" type="text" value="${quantity.value}">
+											</div>
+										</c:forEach>
+									</td>
+									<td><span class="order-price">0</span></td>
 								</tr>
 							</c:when>
 							<c:otherwise>
-								<tr data-id="${item.itemId}">
+								<tr id="item_${item.itemId}" class="item-container"  data-id="${item.itemId}">
 									<td><input class="item-check" type="checkbox" onclick="calcSelectedPrice()"></td>
 									<td class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="item-image" src="/image/products/${item.product.productImage}"></a></td>
 									<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name">${item.product.productName}</span></a></td>
-									<td><span class="item-size">${item.size}</span></td>
-									<td><span class="item-price">${item.product.productPrice}</span></td>
-									<td><input type="number" class ="item-quantity" name="quantity" value ="${item.quantity}"/>
-									<button class="quantity-update-btn">변경</button></td>
-									<td><span class="order-price">${item.product.productPrice * item.quantity}</span></td>
+									<td><span class="product-price">${item.product.productPrice}</span></td>
+									<td class="quantity-container">
+										<c:forEach var="quantity" items="${item.quantities}">
+											<div>
+												<span>${quantity.size}</span>
+												<input class="item-quantity" type="text" value="${quantity.value}" data-originValue="${quantity.value}">
+												<button class="btn quantity-update-btn" data-quantityId="${quantity.quantityId}" style="visibility:hidden">변경</button>
+											</div>
+										</c:forEach>
+									</td>
+									<td><span class="order-price">0</span></td>
 								</tr>
 							</c:otherwise>
 						</c:choose>
@@ -136,7 +161,7 @@
 					</tfoot>
 				</table>
 				<div id="order-section">
-					<button id="selection-delete-btn" class="btn" style="float:left; background-color:#ccc">선택상품삭제</button>
+					<button id="selection-delete-btn" class="btn" style="float:left; background-color:#5D5D5D">선택상품삭제</button>
 					<button id="select-order-btn" class="btn">선택주문하기</button>
 					<button id="order-btn" class="btn">전체주문하기</button>
 				</div>
@@ -149,18 +174,41 @@
 
 	<script>
 	window.addEventListener('load', function() {
-		var quantity_update_element = document.querySelectorAll('.quantity-update-btn');
-		for(var i=0; i<quantity_update_element.length; i++) {
-			quantity_update_element[i].addEventListener('click', function(e) {
-				var quantity = e.target.parentNode.querySelector(".item-quantity").value;
-				var itemId = e.target.parentNode.parentNode.dataset.id;
+		var i;
+		var itemEl = document.querySelectorAll('.item-container');
+		for (i = 0; i < itemEl.length; i++) {
+			calcItemPrice(itemEl[i].dataset.id);
+		}
+		
+		var itemQuantityInputs = document.querySelectorAll('.item-quantity');
+		for (i = 0; i < itemQuantityInputs.length; i++) {
+			itemQuantityInputs[i].addEventListener('keyup', function(e) {
+				var originValue = e.target.getAttribute('data-originValue');
+				var quantity = e.target.value * 1;
+				if (quantity < 0) {
+					e.target.value = 1;
+					return;
+				}
+				e.target.parentNode.querySelector("button").style.visibility="";
+				calcItemPrice(e.target.parentNode.parentNode.parentNode.dataset.id);
+			});
+		}
+		
+		var quantityUpdateBtns = document.querySelectorAll('.quantity-update-btn');
+		for (i = 0; i < quantityUpdateBtns.length; i++) {
+			quantityUpdateBtns[i].addEventListener('click', function(e) {
+				e.target.style.visibility="hidden";
+				var quantityId = e.target.getAttribute('data-quantityId');
+				var originValue = e.target.parentNode.querySelector("input").getAttribute('data-originValue');
+				var quantity = e.target.parentNode.querySelector("input").value;
+				if (originValue == quantity) return null;
+				var itemId = e.target.parentNode.parentNode.parentNode.dataset.id;
 				ydbaobao.ajax({
 					method : 'put',
 					url : '/shop/carts/'+itemId,
-					param : 'quantity='+quantity,
+					param : 'quantityId='+quantityId+'&quantity='+quantity,
 					success : function(req) {
 						alert('수량이 수정되었습니다.');
-						location.reload();
 					}
 				});
 			});
@@ -192,6 +240,7 @@
 			calcSelectedPrice();
 		});
 
+		//선택 상품 주문
 		document.querySelector('#select-order-btn').addEventListener('click', function() {
 			var checkList = document.querySelectorAll('.item-check');
 			var checkLength = checkList.length;
@@ -211,6 +260,7 @@
 			});
 		}, false);
 
+		//전체 상품 주문
 		document.querySelector('#order-btn').addEventListener('click', function() {
 			var checkList = document.querySelectorAll('.item-check');
 			var checkLength = checkList.length;
@@ -292,6 +342,18 @@
 			}
 		}
 		document.querySelector('#selected-price span').textContent = parseInt(totalPrice).toLocaleString().split(".")[0];
+	}
+	
+	function calcItemPrice(itemId) {
+		var itemEl = document.querySelector("#item_"+itemId);
+		var productPrice = itemEl.querySelector(".product-price").textContent * 1;
+		var price = 0;
+		var quantities = itemEl.querySelectorAll(".item-quantity");
+		for (var i = 0; i < quantities.length; i++) {
+			price += quantities[i].value * productPrice;
+		}
+		itemEl.querySelector(".order-price").textContent = price;
+		addItemsPrice();
 	}
 	</script>
 	<script src="/js/ydbaobao.js"></script>

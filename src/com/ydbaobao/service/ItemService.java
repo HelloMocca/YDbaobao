@@ -17,6 +17,7 @@ import com.ydbaobao.dao.ProductDao;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.model.Payment;
 import com.ydbaobao.model.Product;
+import com.ydbaobao.model.Quantity;
 import com.ydbaobao.model.Customer;
 
 @Service
@@ -40,30 +41,35 @@ public class ItemService {
 	 * @param productId
 	 * @param itemStatus
 	 */
-	public void createItems(String customerId, List<String> size, List<Integer> quantity, int productId, String itemStatus) {
+	public void createItems(String customerId, List<String> size, List<Integer> quantities, int productId, String itemStatus) {
+		int itemId;
+		Quantity quantity;
 		//사이즈 구분 없을 경우
 		if(size.isEmpty()) {
-			size.add("-");
+			size.add("FREE");
 		}
-		for(int i=0; i< quantity.size(); i++){
+		Item item = itemDao.readItemByCustomerIdAndProductIdAndItemStatus(customerId, productId, itemStatus);
+		if (item != null) {
+			itemId = item.getItemId();
+		} else {
+			itemId = itemDao.createItem(customerId, productId, itemStatus);
+		}
+		for(int i=0; i< quantities.size(); i++){
+			quantity = itemDao.readQuantityByItemIdAndSize(itemId, size.get(i));
 			// 해당 사이즈가 0개일 경우
-			if(quantity.get(i).equals("0"))			
+			if (quantities.get(i) == 0 && quantity != null) {
+				itemDao.deleteQuantity(quantity.getQuantityId());
 				continue;
-			
-			// 같은 상품, 같은 사이즈, 같은상태가 존재하는지 확인
-			Item item = itemDao.readItemByProductIdAndSizeAndItemStatus(productId, size.get(i), customerId, itemStatus);
-			int itemId;
-			if(item != null) {
-				itemDao.addItemQuantity(item.getItemId(), quantity.get(i));
-				itemId = item.getItemId();
 			}
-			else{
-				itemId = itemDao.createItem(customerId, productId, size.get(i), quantity.get(i), itemStatus);
+			if (quantity == null) {
+				itemDao.createQuantity(new Quantity(0, itemId, size.get(i), quantities.get(i)));
+			} else {
+				itemDao.updateItemQuantity(quantity.getQuantityId(), quantity.getValue()+quantities.get(i));
 			}
-			
-			// 주문 가격 갱신
-			if("S".equals(itemStatus)) 
-				updateItemPrice(itemId);
+		}
+		// 바로 구매일 경우
+		if (itemStatus.equals(Item.ORDERED)) {
+			updateItemPrice(itemDao.readItem(itemId));
 		}
 	}
 	
@@ -72,24 +78,29 @@ public class ItemService {
 	 * @param customerId
 	 * @param itemList
 	 */
-	public void requestItems(String customerId, int[] itemList) {
+	public void orderItems(String customerId, int[] itemList) {
+		Item item;
+		Item originItem;
+		List<Quantity> quantities;
 		for (int itemId : itemList) {
 			// 같은조건으로 주문요청한 내역 조회
-			Item item = itemDao.readItem(itemId);
-			Item originItem = itemDao.readItemByProductIdAndSizeAndItemStatus(item.getProduct().getProductId(), item.getSize(), customerId, "S");
-			
+			item = itemDao.readItem(itemId);
+			quantities = itemDao.readQuantityByItemId(itemId);
+			item.setQuantities(quantities);
+			originItem = itemDao.readItemByCustomerIdAndProductIdAndItemStatus(customerId, item.getProduct().getProductId(), Item.ORDERED);		
 			// 존재할 경우 갯수 추가 및 기존 아이템 제거
 			if(originItem != null) {
-				itemDao.addItemQuantity(originItem.getItemId(), item.getQuantity());
-				itemDao.deleteItem(itemId);
+				for (Quantity quantity : quantities) {
+					itemDao.addItemQuantity(originItem.getItemId(), quantity.getSize(), quantity.getValue());
+				}
+				itemDao.deleteItem(itemId); // 기존의 quantity도 함께 사라짐
 			}
 			else{
-				itemDao.updateItemStatus(itemId, "S");
+				itemDao.updateItemStatus(itemId, Item.ORDERED);
 				originItem = item;
-			}
-			
+			}		
 			// 주문 가격 갱신
-			updateItemPrice(originItem.getItemId());
+			updateItemPrice(originItem);
 		}
 	}
 
@@ -98,30 +109,34 @@ public class ItemService {
 	 * (구매자의 할인율 적용)
 	 * @param itemId
 	 */
-	public void updateItemPrice(int itemId) {
-		Item item = itemDao.readItem(itemId);
+	public void updateItemPrice(Item item) {
 		int price = productService.readByDiscount(item.getProduct().getProductId(), item.getCustomer()).getProductPrice();
-		itemDao.updateItemPrice(item.getItemId(), item.getQuantity() * price);
+		int totalPrice = 0;
+		List<Quantity> quantities = itemDao.readQuantityByItemId(item.getItemId());
+		for (Quantity quantity : quantities) {
+			totalPrice += quantity.getValue() * price;
+		}
+		itemDao.updateItemPrice(item.getItemId(), totalPrice);
 	}
 	
 	public void updateItemPriceByProductId(int productId) {
 		List<Item> items = itemDao.readItemsByProductId(productId);
 		for (Item item : items) {
-			updateItemPrice(item.getItemId());
+			updateItemPrice(item);
 		}
 	}
 	
 	public void updateItemPriceByCustomerId(String customerId) {
 		List<Item> items = itemDao.readItemsByCustomerId(customerId);
 		for (Item item : items) {
-			updateItemPrice(item.getItemId());
+			updateItemPrice(item);
 		}
 	}
 	
 	public void updateItemPriceByBrandId(int brandId) {
 		List<Item> items = itemDao.readItemsByBrandId(brandId);
 		for (Item item : items) {
-			updateItemPrice(item.getItemId());
+			updateItemPrice(item);
 		}
 	}
 	
@@ -130,9 +145,10 @@ public class ItemService {
 	 * @param customerId
 	 * @param itemList
 	 */
-	public List<Item> readCartItems(String customerId, String itemStatus) {
-		List<Item> items = itemDao.readCartItems(customerId, itemStatus);
+	public List<Item> readCartItems(String customerId) {
+		List<Item> items = itemDao.readCartItems(customerId);
 		for (Item item : items) {
+			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 			Product product = item.getProduct();
 			int discountRate = product.getBrand().getDiscountRate(item.getCustomer().getCustomerGrade());
 			product.discount(discountRate);
@@ -155,6 +171,7 @@ public class ItemService {
 	public Item readItemByItemId(int itemId) {
 		Item item = itemDao.readItem(itemId);
 		Product product = item.getProduct(); 
+		item.setQuantities(itemDao.readQuantityByItemId(itemId));
 		product.setProductPrice(productService.readByDiscount(product.getProductId(), item.getCustomer()).getProductPrice());
 		return item;
 	}
@@ -173,66 +190,76 @@ public class ItemService {
 		itemDao.deleteItem(itemId);
 	}
 
-	public void updateItemQuantity(int itemId, int quantity, String customerId) {
-		if(!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
-			//TODO 아이템 고객아이디와 수정하려는 고객아이디가 다를경우 예외처리.
-			//ControllerExceptionHandler 을 이용하여 return status로 보내줘서 처리하면 좋을 듯
-			return;
-		}
-		itemDao.updateItemQuantity(itemId, quantity);
+	public boolean updateItemQuantity(int quantityId, int quantity) {
+//		if(!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
+//			//TODO 아이템 고객아이디와 수정하려는 고객아이디가 다를경우 예외처리.
+//			//ControllerExceptionHandler 을 이용하여 return status로 보내줘서 처리하면 좋을 듯
+//			return false;
+//		}
+		itemDao.updateItemQuantity(quantityId, quantity);
+		return true;
 	}
 
 	public boolean acceptOrder(String[] itemIdList, String[] quantityList) {
-		Item item;
-		int price = 0;
-		int quantity;
-		int totalPrice;
-		Payment payment;
-		List<Customer> customers = new ArrayList<Customer>();
-		List<Item> items = new ArrayList<Item>();
-		//customer Listing
-		for (int i = 0; i < itemIdList.length; i++) {
-			item = itemDao.readItem(Integer.valueOf(itemIdList[i]));
-			items.add(item);
-			if(!customers.contains(item.getCustomer())) {
-				customers.add(item.getCustomer());
-			}
-		}
-		for (Customer thisCustomer : customers) {
-			int i = 0;
-			price = 0;
-			totalPrice = 0;
-			payment = paymentService.readPaymentByCustomerIdDate(thisCustomer.getCustomerId(), CommonUtil.getDate());
-			for (Item thisItem : items) {	
-				if (thisItem.getCustomer().equals(thisCustomer)) {
-					quantity = Integer.valueOf(quantityList[i]);
-					price = productService.readByDiscount(thisItem.getProduct().getProductId(), thisItem.getCustomer()).getProductPrice();
-					totalPrice += price * quantity;
-					itemDao.createItem(thisCustomer.getCustomerId(), thisItem.getProduct().getProductId(), thisItem.getSize(), quantity, "P", price * quantity, payment.getPaymentId());
-					itemDao.addItemQuantity(thisItem.getItemId(), -quantity);
-					if(thisItem.getQuantity()-quantity == 0) {
-						itemDao.deleteItem(thisItem.getItemId());
-					} else {
-						itemDao.updateItemPrice(thisItem.getItemId(), (thisItem.getQuantity()-quantity) * price);
-					}
-				}
-				i++;
-			}
-			paymentService.updatePayment(new Payment(payment.getPaymentId(), "P", payment.getAmount() +  totalPrice));
-		}
+//		Item item;
+//		int price = 0;
+//		int quantity;
+//		int totalPrice;
+//		Payment payment;
+//		List<Customer> customers = new ArrayList<Customer>();
+//		List<Item> items = new ArrayList<Item>();
+//		//customer Listing
+//		for (int i = 0; i < itemIdList.length; i++) {
+//			item = itemDao.readItem(Integer.valueOf(itemIdList[i]));
+//			items.add(item);
+//			if(!customers.contains(item.getCustomer())) {
+//				customers.add(item.getCustomer());
+//			}
+//		}
+//		for (Customer thisCustomer : customers) {
+//			int i = 0;
+//			price = 0;
+//			totalPrice = 0;
+//			payment = paymentService.readPaymentByCustomerIdDate(thisCustomer.getCustomerId(), CommonUtil.getDate());
+//			for (Item thisItem : items) {	
+//				if (thisItem.getCustomer().equals(thisCustomer)) {
+//					quantity = Integer.valueOf(quantityList[i]);
+//					price = productService.readByDiscount(thisItem.getProduct().getProductId(), thisItem.getCustomer()).getProductPrice();
+//					totalPrice += price * quantity;
+//					itemDao.createItem(thisCustomer.getCustomerId(), thisItem.getProduct().getProductId(), thisItem.getSize(), quantity, "P", price * quantity, payment.getPaymentId());
+//					itemDao.addItemQuantity(thisItem.getItemId(), -quantity);
+//					if(thisItem.getQuantity()-quantity == 0) {
+//						itemDao.deleteItem(thisItem.getItemId());
+//					} else {
+//						itemDao.updateItemPrice(thisItem.getItemId(), (thisItem.getQuantity()-quantity) * price);
+//					}
+//				}
+//				i++;
+//			}
+//			paymentService.updatePayment(new Payment(payment.getPaymentId(), "P", payment.getAmount() +  totalPrice));
+//		}
 		return true;
 	}
 
 	public boolean rejectOrder(int itemId) {
-		Item item = itemDao.readItem(itemId);
-		if(item == null)
-			return false;
-		itemDao.updateItemStatus(itemId, "R");
+//		Item item = itemDao.readItem(itemId);
+//		if(item == null)
+//			return false;
+//		itemDao.updateItemStatus(itemId, "R");
 		return true;
 	}
 
+	/**
+	 * 구매자 customerId로 주문한 상품을 반환(수량 포함)
+	 * @param customerId
+	 * @return Quantity(수량)이 포함된 Item List 반환
+	 */
 	public List<Item> readOrderedItemsByCustomerId(String customerId) {
-		return itemDao.readOrderedItemsByCustomerId(customerId);
+		List<Item> items = itemDao.readOrderedItemsByCustomerId(customerId);
+		for (Item item : items) {
+			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
+		}
+		return items;
 	}
 	
 
