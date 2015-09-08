@@ -33,6 +33,11 @@ public class ProductDao extends JdbcDaoSupport {
 		setDataSource(dataSource);
 	}
 	
+	/**
+	 * 상품을 생성하고 생성된 상품 productId 반환
+	 * @param product
+	 * @return 생성된 상품의 productId
+	 */
 	public int create(final Product product) {
 		final String sql = "insert into PRODUCTS values(default, ?, ?, ?, default, ?, default, ?, ?, ?, default)";
 		KeyHolder keyHolder = new GeneratedKeyHolder();

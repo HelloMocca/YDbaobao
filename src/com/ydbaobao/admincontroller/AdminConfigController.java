@@ -26,6 +26,7 @@ public class AdminConfigController {
 		model.addAttribute("adminConfig", adminConfigService.read());
 		return "config";
 	}
+	
 	@RequestMapping(value = "", method = {RequestMethod.POST})
 	public String update(Model model, AdminConfig adminConfig) {
 		CommonUtil.productsPerPage = adminConfig.getAdminDisplayProducts();

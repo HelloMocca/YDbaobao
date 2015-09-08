@@ -85,10 +85,10 @@ public class OrderController {
 	}
 	
 	/**
-	 * 주문요청 페이지에서 주문요청하기
+	 * 주문확인 페이지에서 주문
 	 * @param itemList
 	 * @param session
-	 * @return
+	 * @return 
 	 * @throws IOException
 	 */
 	@RequestMapping(method = RequestMethod.POST)
@@ -98,8 +98,16 @@ public class OrderController {
 		return "OK";
 	}
 	
+	/**
+	 * 주문내역 페이지에 주문취소
+	 * @param itemId
+	 * @return 취소 처리 결과 반환
+	 * @throws IOException 
+	 */
 	@RequestMapping(value = "/cancel/{itemId}", method = RequestMethod.POST)
-	public ResponseEntity<Object> cancelOrder(@PathVariable int itemId) {
+	public ResponseEntity<Object> cancelOrder(HttpSession session, @PathVariable int itemId) throws IOException {
+		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
+		if (customerId == null) return JSONResponseUtil.getJSONResponse("", HttpStatus.BAD_REQUEST);
 		Date date = new Date();
 		SimpleDateFormat ampmFormat = new SimpleDateFormat("a");
 		SimpleDateFormat hourFormat = new SimpleDateFormat("hh");
@@ -116,6 +124,6 @@ public class OrderController {
 				return JSONResponseUtil.getJSONResponse("21:30 ~ 09:30 사이에는 주문을 취소할 수 없습니다.", HttpStatus.OK);
 			}
 		}
-		return JSONResponseUtil.getJSONResponse("주문이 취소되었습니다.", HttpStatus.OK);
+		return itemService.deleteItem(customerId, itemId) ? JSONResponseUtil.getJSONResponse("주문이 취소되었습니다.", HttpStatus.OK) : JSONResponseUtil.getJSONResponse("", HttpStatus.BAD_REQUEST);
 	}
 }

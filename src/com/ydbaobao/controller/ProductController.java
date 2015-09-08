@@ -34,6 +34,13 @@ public class ProductController {
 	@Resource
 	private AdminConfigService adminConfigService;
 
+	/**
+	 * 상품페이지 요청
+	 * @param productId
+	 * @param model
+	 * @param session
+	 * @return 상품정보가 포함된 상품페이지
+	 */
 	@RequestMapping(value = "/products/{productId}", method = RequestMethod.GET)
 	public String read(@PathVariable int productId, Model model, HttpSession session) {
 		SessionCustomer sessionCustomer = (SessionCustomer) session.getAttribute("sessionCustomer");

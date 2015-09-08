@@ -337,9 +337,9 @@ public class ItemDao extends JdbcDaoSupport {
 		getJdbcTemplate().update(sql, itemStatus, itemId);
 	}
 
-	public void deleteItem(int itemId) {
+	public int deleteItem(int itemId) {
 		String sql = "delete from ITEMS where itemId = ?";
-		getJdbcTemplate().update(sql, itemId);
+		return getJdbcTemplate().update(sql, itemId);
 	}
 
 	public void addItemQuantity(int itemId, String size, int quantity) {
@@ -392,6 +392,7 @@ public class ItemDao extends JdbcDaoSupport {
 	}
 	
 	public int createQuantity(final Quantity quantity) {
+		System.out.println("Quantity 생성: "+quantity.toString());
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		final String sql = "insert into QUANTITY (itemId, size, value) values(?, ?, ?)";
 		getJdbcTemplate().update(new PreparedStatementCreator() {

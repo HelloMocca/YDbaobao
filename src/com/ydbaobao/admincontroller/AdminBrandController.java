@@ -23,50 +23,83 @@ import com.ydbaobao.service.BrandService;
 @RequestMapping("/admin/brands")
 public class AdminBrandController {
 	private static final Logger logger = LoggerFactory.getLogger(AdminBrandController.class);
+	
 	@Resource
 	private BrandService brandService;
 
 	/**
-	 * 브랜드 추가
-	 * 
-	 * @param brandName
+	 * 브랜드 관리페이지 요청
+	 * @param model
+	 * @return 브랜드관리페이지
 	 */
-	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<Object> create(@RequestParam String brandName, @RequestParam int discount_1,
-			@RequestParam int discount_2, @RequestParam int discount_3, @RequestParam int discount_4,
-			@RequestParam int discount_5, @RequestParam String brandSize) {
-		Brand brand = new Brand(brandName, 0, discount_1, discount_2, discount_3, discount_4, discount_5, brandSize);
-		if (brandService.createBrand(brand) < 0) {
-			return JSONResponseUtil.getJSONResponse("fail", HttpStatus.OK);
-		}
-		return JSONResponseUtil.getJSONResponse("success", HttpStatus.OK);
-	}
-
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String read(Model model) {
 		model.addAttribute("brands", brandService.readBrands());
 		return "brandManager";
 	}
+	
+	/**
+	 * 브랜드 추가
+	 * brandSize는 명시안할경우 FREE 사이즈
+	 * @param brandName
+	 * @param discount_1
+	 * @param discount_2
+	 * @param discount_3
+	 * @param discount_4
+	 * @param discount_5
+	 * @param brandSize
+	 * @return success or fail
+	 */
+	@RequestMapping(method = RequestMethod.POST)
+	public ResponseEntity<Object> create(@RequestParam String brandName, @RequestParam int discount_1,
+			@RequestParam int discount_2, @RequestParam int discount_3, @RequestParam int discount_4,
+			@RequestParam int discount_5, @RequestParam String brandSize) {
+		if (brandSize.equals("")) brandSize = "FREE";
+		Brand brand = new Brand(brandName, 0, discount_1, discount_2, discount_3, discount_4, discount_5, brandSize);
+		if (brandService.createBrand(brand) < 0) {
+			logger.debug("브랜드 생성 :"+brand.toString());
+			return JSONResponseUtil.getJSONResponse("fail", HttpStatus.OK);
+		}
+		return JSONResponseUtil.getJSONResponse("success", HttpStatus.OK);
+	}
 
+	/**
+	 * searchValue로 브랜드명 검색
+	 * @param searchValue
+	 * @return 브랜드명 검색결과
+	 */
 	@RequestMapping("/find")
 	public ResponseEntity<Object> find(@RequestParam String searchValue) {
 		return JSONResponseUtil.getJSONResponse(brandService.findBrands(searchValue), HttpStatus.OK);
 	}
 
-	// TODO POST -> PUT
-	@RequestMapping(value = "/{brandId}", method = RequestMethod.POST)
+	/**
+	 * 브랜드 수정
+	 * @param brand
+	 * @param result
+	 * @return
+	 */
+	@RequestMapping(value = "/{brandId}", method = RequestMethod.POST)// TODO POST -> PUT
 	public ResponseEntity<Object> update(@Valid Brand brand, BindingResult result) {
 		if (result.hasErrors()) {
 			return JSONResponseUtil.getJSONResponse(result.getAllErrors(), HttpStatus.BAD_REQUEST);
 		}
+		logger.debug("브랜드 수정 :"+brand);
 		brandService.updateBrand(brand);
 		return JSONResponseUtil.getJSONResponse("", HttpStatus.OK);
 	}
-
-	@RequestMapping(value = "/{brandId}", method = RequestMethod.DELETE)
+	
+	/**
+	 * brandId 와 일치하는 브랜드 삭제
+	 * @RequestMapping(value = "/{brandId}", method = RequestMethod.DELETE)
+	 * @param brandId
+	 * @return
+	 */
 	public ResponseEntity<Object> delete(@PathVariable String brandId) {
-		brandService.deleteBrand(brandId);
-		return JSONResponseUtil.getJSONResponse("", HttpStatus.OK);
+		if (brandService.deleteBrand(brandId)) {
+			logger.debug("브랜드 삭제 brandId:"+brandId);
+			return JSONResponseUtil.getJSONResponse("", HttpStatus.OK);
+		}
+		return JSONResponseUtil.getJSONResponse("fail", HttpStatus.BAD_REQUEST);
 	}
-
 }

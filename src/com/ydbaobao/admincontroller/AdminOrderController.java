@@ -6,9 +6,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.support.JSONResponseUtil;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.service.ItemService;
 
@@ -76,10 +72,11 @@ public class AdminOrderController {
 	}
 
 	/**
-	 * 관지자 화면에서 주문 내역에 대한 상태 변경(승인, 반려)
-	 * @param orderId
-	 * @param orderStatus
-	 * @return
+	 * 주문에 대한 사입처리
+	 * @param itemList [처리(변동)될 Item의 Id 배열]
+	 * @param sizeList [각 Item에서 변동될 Size 배열]
+	 * @param quantityList [각 Item에서 변동될 수량 배열]
+	 * @return 성공처리여부
 	 */
 	@RequestMapping(value = "/accept", method = RequestMethod.POST)
 	public @ResponseBody String acceptOrder(@RequestParam String itemList, @RequestParam String quantityList) {
@@ -87,6 +84,11 @@ public class AdminOrderController {
 		return "success";
 	}
 	
+	/**
+	 * 주문에 대해 반려처리
+	 * @param itemId
+	 * @return
+	 */
 	@RequestMapping(value = "/reject/{itemId}", method = RequestMethod.POST)
 	public @ResponseBody String rejectOrder(@PathVariable int itemId) {
 		if(!itemService.rejectOrder(itemId))
@@ -94,6 +96,12 @@ public class AdminOrderController {
 		return "success";
 	}
 	
+	/**
+	 *  해당 Item들에 대하여 주문서를 출력
+	 * @param itemIdList
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(value = "/ordersheet/{itemIdList}")
 	public String requestOrdersheet(@PathVariable String itemIdList, Model model) {
 		List<Item> items = itemService.readItemsByItemIds(itemIdList.split(","));

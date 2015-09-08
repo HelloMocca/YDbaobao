@@ -3,7 +3,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <div id="brand-selector" class="wrap content">
 	<div id="brand-initial-tab">
-		<label>브랜드 선택</label>
+		<label>BRANDS</label>
 		<ul>
 			<li class="first-letter"><span>#</span><li>
 			<c:forEach var="firstLetter" items="${firstLetterList}">

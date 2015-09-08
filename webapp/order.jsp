@@ -65,6 +65,15 @@ tr.border_top td {
   border-top:1pt solid #ccc;
 }
 
+.quantity-container span{
+	width:35px;
+	display:inline-block;
+}
+	
+.item-quantity {
+	font-weight:bold;
+}
+
 </style>
 <title>YDbaobao:: 주문목록</title>
 </head>
@@ -89,9 +98,9 @@ tr.border_top td {
 					<thead>
 						<tr>
 							<th>주문번호</th>
-							<th></th>
-							<th>상품설명</th>
-							<th>주문된 수량</th>
+							<th colspan="2">상품설명</th>
+							<th>판매가</th>
+							<th>사이즈/수량</th>
 							<th>금액</th>
 							<th style="width:100px"></th>
 						</tr>
@@ -105,14 +114,20 @@ tr.border_top td {
 								</td>
 								<td>
 									<span class="item-name"><b>${item.product.productName}</b></span>
-									<br />
-									<span class="item-size">사이즈 : ${item.size}</span>
-									<br />
-									<span class="item-price">가격 : ${item.product.productPrice}</span>
 								</td>
-								<td><span class="item-quantity">${item.quantity}</span></td>
-								<td><span class="order-price">${item.product.productPrice * item.quantity}</span></td>
-								<td><button class="reject">주문취소</button></td>
+								<td>
+									<span class="product-price">${item.product.productPrice}</span>
+								</td>
+								<td class="quantity-container">
+									<c:forEach var="quantity" items="${item.quantities}">
+											<div>
+												<span>${quantity.size}</span>
+												<span class="item-quantity">${quantity.value}</span>
+											</div>
+									</c:forEach>
+								</td>
+								<td><span class="order-price">${item.price}</span></td>
+								<td><button class="reject btn btn-sm">주문취소</button></td>
 							</tr>
 						</c:forEach>
 					</tbody>

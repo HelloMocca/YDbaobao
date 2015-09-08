@@ -21,17 +21,17 @@
 		<div id="first-section" class="wrap" style="height: 635px;">
 			<div class="loginBox">
 				<form:form modelAttribute="customer" method="post" action="/shop/login">
-					<h1>로그인</h1>
-					<label for="customerId">아이디</label>
+					<h1>LOGIN</h1>
+					<label for="customerId">ID</label>
 					<form:input path="customerId" />
 					<br/>
-					<label for="customerPassword">비밀번호</label>
+					<label for="customerPassword">PASSWORD</label>
 					<form:password path="customerPassword" />
 					<br/>
 					<c:if test="${not empty message}">
 						<span class="error" style="color:#F15F5F; font-size:12px; padding:5px 10px; position:relative; display:block;">${message}</span>
 					</c:if>
-					<button type="submit">로그인</button>
+					<button type="submit">ENTER</button>
 				</form:form>
 			</div>
 		</div>

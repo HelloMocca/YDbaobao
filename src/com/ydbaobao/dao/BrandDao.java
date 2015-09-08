@@ -103,9 +103,9 @@ public class BrandDao extends JdbcDaoSupport {
 		getJdbcTemplate().update(sql, brand.getBrandName(), brand.getDiscount_1(), brand.getDiscount_2(), brand.getDiscount_3(), brand.getDiscount_4(), brand.getDiscount_5(), brand.getBrandSize(), brand.getBrandId());
 	}
 
-	public void deleteBrand(String brandId) {
+	public int deleteBrand(String brandId) {
 		String sql = "delete from BRANDS where brandId = ?";
-		getJdbcTemplate().update(sql, brandId);
+		return getJdbcTemplate().update(sql, brandId);
 	}
 	
 	public Brand readBrandByBrandId(int brandId) {

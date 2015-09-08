@@ -6,7 +6,7 @@
 	<c:when test="${not empty sessionAdmin }">
 	</c:when>
 	<c:otherwise>
-		<c:redirect url="/shop/loginForm" />
+		<c:redirect url="./shop/loginForm" />
 	</c:otherwise>
 </c:choose>
 <div id="horizontal-category-menu">

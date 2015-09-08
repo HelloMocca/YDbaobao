@@ -39,6 +39,11 @@ public class ProductService {
 	@Resource
 	ItemService itemService;
 
+	/**
+	 * brandId에 해당하는 브랜드의 상품 생성
+	 * @param brandId
+	 * @return
+	 */
 	public int create(int brandId) {
 		Brand brand = brandDao.readBrandByBrandId(brandId);
 		Product product = new Product(brand.getBrandName(), new Category(), brand, brand.getBrandSize());
@@ -48,20 +53,21 @@ public class ProductService {
 		return productId;
 	}
 
+	/**
+	 * productId와 일치하는 상품정보 반환
+	 * @param productId
+	 * @return
+	 */
 	public Product read(int productId) {
 		return productDao.read(productId);
 	}
-
-	public Product readByDiscount(int productId, SessionCustomer sessionCustomer) {
-		Product product = productDao.read(productId);
-		if (null == sessionCustomer) {
-			return product;
-		}
-		String grade = customerDao.readCustomerById(sessionCustomer.getSessionId()).getCustomerGrade();
-		Brand brand = brandDao.readBrandByBrandId(product.getBrand().getBrandId());
-		return product.discount(brand.getDiscountRate(grade));
-	}
 	
+	/**
+	 * 상품아이디와 주문자정보로 상품 가격을 할인율이 적용된 가격으로 반환
+	 * @param productId
+	 * @param customer
+	 * @return 할인율이 적용된 상품가격
+	 */
 	public Product readByDiscount(int productId, Customer customer) {
 		Product product = productDao.read(productId);
 		if (null == customer) {
@@ -70,6 +76,10 @@ public class ProductService {
 		String grade = customerDao.readCustomerById(customer.getCustomerId()).getCustomerGrade();
 		Brand brand = brandDao.readBrandByBrandId(product.getBrand().getBrandId());
 		return product.discount(brand.getDiscountRate(grade));
+	}
+	
+	public Product readByDiscount(int productId, SessionCustomer customer) {
+		return readByDiscount(productId, new Customer(customer.getSessionId()));
 	}
 	
 	public List<Product> readByProductName(String termsForQuery, int page, int productsPerPage, SessionCustomer sessionCustomer) {

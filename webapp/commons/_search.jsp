@@ -8,13 +8,13 @@
 				<div id="search-bar">
 					<div id="select-area" style="float:left;">
 						<select id="select" style="width:100px;">
-							<option class="selected" value="상품명">상품명</option>
-							<option value="브랜드명">브랜드명</option>
+							<option class="selected" value="NAME">NAME</option>
+							<option value="BRAND">BRAND</option>
 						</select>
 					</div>
 					<input id="search-terms" type="text" style="float:right"/>
 				</div>
-				<button id="search-btn" class="btn" type="submit">검색</button>
+				<button id="search-btn" class="btn" type="submit">Search</button>
 			</form>
 		</div>
 	</div>
@@ -37,10 +37,10 @@
 			if(terms===""){
 				return;
 			}
-			if(selected === '상품명') {
+			if(selected === 'NAME') {
 				window.location.href = '/search/products?terms=' + terms + '&page=1';
 			}
-			if(selected === '브랜드명') {
+			if(selected === 'BRAND') {
 				window.location.href = '/search/brands?terms=' + terms + '&page=1';
 			}
 		}, false);

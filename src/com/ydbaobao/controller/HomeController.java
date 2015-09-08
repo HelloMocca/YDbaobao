@@ -126,12 +126,12 @@ public class HomeController {
 			return "form";
 		}
 		customerService.join(customer);
-		return "redirect:/shop";
+		return "redirect:/shop/loginForm";
 	}
 
 	@RequestMapping("/shop/logout")
 	protected String logout(HttpSession session) {
 		session.invalidate();
-		return "redirect:/shop";
+		return "redirect:/shop/loginForm";
 	}
 }

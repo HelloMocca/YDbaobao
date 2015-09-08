@@ -161,11 +161,7 @@ public class ItemService {
 	}
 	
 	public List<ItemPackage> readOrderedItemsOrderBy(String identifier) {
-		if (identifier.equals("brandId")) {
-			return packageByBrand(itemDao.readOrderedItemsOrderBy(identifier));			
-		} else {
-			return packageByCustomer(itemDao.readOrderedItemsOrderBy(identifier));
-		}
+		return identifier.equals("brandId") ? packageByBrand(itemDao.readOrderedItemsOrderBy(identifier)) : packageByCustomer(itemDao.readOrderedItemsOrderBy(identifier));
 	}
 	
 	public Item readItemByItemId(int itemId) {
@@ -181,13 +177,17 @@ public class ItemService {
 		return itemDao.readItemsByPaymentId(paymentId);
 	}
 	
-	public void deleteItem(String customerId, int itemId) {
-		if(!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
-			//TODO 아이템 고객아이디와 삭제하려는 고객아이디가 다를경우 예외처리.
-			//ControllerExceptionHandler 을 이용하여 return status로 보내줘서 처리하면 좋을 듯
-			return;
+	/**
+	 * 주문취소
+	 * @param customerId
+	 * @param itemId
+	 * @return 요청하는 customerId와 주문의 customerId가 다를경우 false, 쿼리결과 적용된 record가 없을경우 false 반환.
+	 */
+	public boolean deleteItem(String customerId, int itemId) {
+		if (!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
+			return false;
 		}
-		itemDao.deleteItem(itemId);
+		return itemDao.deleteItem(itemId) == 1 ? true : false;
 	}
 
 	public boolean updateItemQuantity(int quantityId, int quantity) {
@@ -257,6 +257,7 @@ public class ItemService {
 	public List<Item> readOrderedItemsByCustomerId(String customerId) {
 		List<Item> items = itemDao.readOrderedItemsByCustomerId(customerId);
 		for (Item item : items) {
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), customerId).getProductPrice());
 			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 		}
 		return items;

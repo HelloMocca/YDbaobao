@@ -70,8 +70,9 @@ public class BrandService {
 		}
 	}
 
-	public void deleteBrand(String brandId) {
-		brandDao.deleteBrand(brandId);
+	public boolean deleteBrand(String brandId) {
+		if(brandDao.deleteBrand(brandId) == 1) return true;
+		return false;
 	}
 
 	public List<Brand> search(String firstLetter) {

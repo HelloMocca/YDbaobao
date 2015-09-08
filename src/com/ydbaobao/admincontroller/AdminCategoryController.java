@@ -15,6 +15,7 @@ import com.ydbaobao.service.CategoryService;
 @Controller
 @RequestMapping("/admin/categories")
 public class AdminCategoryController {
+	
 	@Resource
 	private CategoryService categoryService;
 	
