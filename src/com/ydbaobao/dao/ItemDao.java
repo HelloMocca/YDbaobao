@@ -84,8 +84,7 @@ public class ItemDao extends JdbcDaoSupport {
 			}
 		};
 		try {
-			return getJdbcTemplate().query(
-					sql, rm, customerId);
+			return getJdbcTemplate().query(sql, rm, customerId);
 		} catch (EmptyResultDataAccessException e) {
 			return null;
 		}
@@ -126,29 +125,6 @@ public class ItemDao extends JdbcDaoSupport {
 			return null;
 		}
 	}
-	
-//	public Item readItemByProductIdAndSizeAndItemStatus(int productId, String size, String customerId, String itemStatus) {
-//		String sql = "select * from ITEMS where productId = ? and size = ? and customerId = ? and itemStatus = ?";
-//		RowMapper<Item> rm = new RowMapper<Item>() {
-//			@Override
-//			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
-//				return new Item(
-//						rs.getInt("itemId"), new Customer(rs.getString("customerId")),
-//						new Product(rs.getInt("productId")),
-//						rs.getString("itemStatus"), rs.getInt("price"));
-//			}
-//		};
-//		try {
-//			return getJdbcTemplate().queryForObject(sql, rm, productId, size, customerId, itemStatus);
-//		} catch (EmptyResultDataAccessException e) {
-//			return null;
-//		}
-//	}
-
-	public void updateItemPrice(int itemId, int price) {
-		String sql = "update ITEMS set price = ? where itemId = ?";
-		getJdbcTemplate().update(sql, price, itemId);
-	}
 
 	public List<Item> readOrderedItemsByCustomerId(String customerId) {
 		String sql = "select * from ITEMS A, PRODUCTS B where A.customerId = ? "
@@ -168,7 +144,11 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, customerId);
+		try {
+			return getJdbcTemplate().query(sql, rm, customerId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 
 	public List<Item> readItemsByCustomerId(String customerId) {
@@ -183,7 +163,11 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, customerId);
+		try {
+			return getJdbcTemplate().query(sql, rm, customerId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	public List<Item> readItemsByProductId(int productId) {
@@ -201,7 +185,11 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, productId);
+		try {
+			return getJdbcTemplate().query(sql, rm, productId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	public List<Item> readItemsByBrandId(int brandId) {
@@ -219,11 +207,15 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, brandId);
+		try {
+			return getJdbcTemplate().query(sql, rm, brandId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	public List<Item> readOrderedItemsByBrandId(int brandId) {
-		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.itemStatus = 'S' AND A.productId = B.productId AND B.brandId = C.brandId AND C.brandId = ?";
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.itemStatus = '"+Item.ORDERED+"' AND A.productId = B.productId AND B.brandId = C.brandId AND C.brandId = ?";
 		RowMapper<Item> rm = new RowMapper<Item>() {
 			@Override
 			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -237,11 +229,15 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, brandId);
+		try {
+			return getJdbcTemplate().query(sql, rm, brandId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 
 	public List<Item> readOrderedItemsOrderBy(String arg) {
-		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.itemStatus = 'S' AND A.productId = B.productId AND B.brandId = C.brandId";
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.itemStatus = '"+Item.ORDERED+"' AND A.productId = B.productId AND B.brandId = C.brandId";
 		if (arg.equals("customerId")) {
 			sql += " ORDER BY A.customerId desc";
 		} else { //Default
@@ -260,7 +256,11 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm);
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 
 	public List<Item> readItemsByPaymentId(int paymentId) {
@@ -278,7 +278,11 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"), new Payment(rs.getInt("paymentId"), new Customer(rs.getString("customerId")), rs.getString("paymentType"), rs.getInt("amount"), rs.getString("paymentDate")));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, paymentId);
+		try {
+			return getJdbcTemplate().query(sql, rm, paymentId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 
 	public List<Item> readItemByItemIds(String[] itemIds) {
@@ -301,7 +305,11 @@ public class ItemDao extends JdbcDaoSupport {
 						rs.getInt("price"), null);
 			}
 		};
-		return getJdbcTemplate().query(sql, rm);
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 
 	public Item readItemByCustomerIdAndProductIdAndItemStatus(String customerId, int productId, String itemStatus) {
@@ -332,27 +340,68 @@ public class ItemDao extends JdbcDaoSupport {
 	 * @param itemId
 	 * @param itemStatus
 	 */
-	public void updateItemStatus(int itemId, String itemStatus) {
+	public boolean updateItemStatus(int itemId, String itemStatus) {
 		String sql = "update ITEMS set itemStatus = ? where itemId = ?";
-		getJdbcTemplate().update(sql, itemStatus, itemId);
-	}
-
-	public int deleteItem(int itemId) {
-		String sql = "delete from ITEMS where itemId = ?";
-		return getJdbcTemplate().update(sql, itemId);
-	}
-
-	public void addItemQuantity(int itemId, String size, int quantity) {
-		String sql = "update QUANTITY set value = value + ? where itemId = ? AND size = ?";
-		getJdbcTemplate().update(sql, quantity, itemId, size);
+		return (getJdbcTemplate().update(sql, itemStatus, itemId) == 1) ? true : false;
 	}
 	
-	public int updateItemQuantity(int quantityId, int quantity) {
+	public boolean updateItemPrice(int itemId, int price) {
+		String sql = "update ITEMS set price = ? where itemId = ?";
+		return (getJdbcTemplate().update(sql, price, itemId) == 1) ? true : false;
+	}
+
+	public boolean deleteItem(int itemId) {
+		String sql = "delete from ITEMS where itemId = ?";
+		return (getJdbcTemplate().update(sql, itemId) == 1) ? true : false;
+	}
+
+	public int createQuantity(final Quantity quantity) {
+		System.out.println("Quantity 생성: "+quantity.toString());
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		final String sql = "insert into QUANTITY (itemId, size, value) values(?, ?, ?)";
+		getJdbcTemplate().update(new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+				ps.setInt(1, quantity.getItemId());
+				ps.setString(2, quantity.getSize());
+				ps.setInt(3, quantity.getValue());
+				return ps;
+			}
+		}, keyHolder);
+		return keyHolder.getKey().intValue();
+	}
+
+	public boolean addItemQuantity(int itemId, String size, int quantity) {
+		String sql = "update QUANTITY set value = value + ? where itemId = ? AND size = ?";
+		return (getJdbcTemplate().update(sql, quantity, itemId, size) == 1) ? true : false;
+	}
+	
+	public boolean updateItemQuantity(int quantityId, int quantity) {
 		if (quantity == 0) {
 			return deleteQuantity(quantityId);
 		}
 		String sql = "update QUANTITY set value = ? where quantityId = ?";
-		return getJdbcTemplate().update(sql, quantity, quantityId);
+		return (getJdbcTemplate().update(sql, quantity, quantityId) == 1) ? true : false;
+	}
+	
+	public Quantity readQuantityByQuantityId(int quantityId) {
+		String sql = "select * from QUANTITY where quantityId = ?";
+		RowMapper<Quantity> rm = new RowMapper<Quantity>() {
+			@Override
+			public Quantity mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Quantity(
+							rs.getInt("quantityId"),
+							rs.getInt("itemId"),
+							rs.getString("size"),
+							rs.getInt("value")
+						);
+			}
+		};
+		try {
+			return getJdbcTemplate().queryForObject(sql, rm, quantityId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	public List<Quantity> readQuantityByItemId(int itemId) {
@@ -368,7 +417,11 @@ public class ItemDao extends JdbcDaoSupport {
 						);
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, itemId);
+		try {
+			return getJdbcTemplate().query(sql, rm, itemId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	public Quantity readQuantityByItemIdAndSize(int itemId, String size) {
@@ -391,24 +444,13 @@ public class ItemDao extends JdbcDaoSupport {
 		}
 	}
 	
-	public int createQuantity(final Quantity quantity) {
-		System.out.println("Quantity 생성: "+quantity.toString());
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		final String sql = "insert into QUANTITY (itemId, size, value) values(?, ?, ?)";
-		getJdbcTemplate().update(new PreparedStatementCreator() {
-			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-				PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-				ps.setInt(1, quantity.getItemId());
-				ps.setString(2, quantity.getSize());
-				ps.setInt(3, quantity.getValue());
-				return ps;
-			}
-		}, keyHolder);
-		return keyHolder.getKey().intValue();
-	}
-	
-	public int deleteQuantity(int quantityId) {
+	public boolean deleteQuantity(int quantityId) {
+		Quantity quantity = readQuantityByQuantityId(quantityId);
 		String sql = "delete from QUANTITY where quantityId = ?";
-		return getJdbcTemplate().update(sql);
+		if (getJdbcTemplate().update(sql, quantityId) == 1) {
+			//Item 에 남은 Quantity 가 있는지 확인
+			return (readQuantityByItemId(quantity.getItemId()) == null) ? deleteItem(quantity.getItemId()) : true;
+		}
+		return false;
 	}
 }

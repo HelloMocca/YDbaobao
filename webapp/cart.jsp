@@ -247,7 +247,7 @@
 			var paramList = [];
 			for(var i = 0; i < checkLength; i++) {
 				if(checkList[i].checked) {
-					paramList.push(checkList[i].parentNode.parentNode.getAttribute('data-id'));
+					paramList.push(checkList[i].parentNode.parentNode.dataset.id);
 				}
 			}
 			if(paramList.length === 0) {

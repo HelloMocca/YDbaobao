@@ -28,7 +28,7 @@
 		width:50px;
 		height:50px;
 	}
-	.order-price {
+	.order-price, .alloc-price {
 		font-weight:800;
 	}
 
@@ -48,6 +48,10 @@
 		float: right;
 		display:table;
 		padding:25px; margin-bottom:25px;
+	}
+	
+	#button-group button {
+		padding:15px; background:#EA6576; border-radius:2px; border:0; font-size:20px;
 	}
 	
 	button.info, button.success, button.reject {
@@ -109,7 +113,7 @@
 							<th colspan="2" width="130px">상품명</th>
 							<th>판매가</th>
 							<th>사이즈 | 주문수량 | 사입수량</th>
-							<th>금액</th>
+							<th>사입금액 | 금액</th>
 							<th> </th>
 						</tr>
 						<c:forEach var="item" items="${brandPack.items}">
@@ -124,13 +128,18 @@
 											<div>
 												<span>${quantity.size}</span>
 												<span class="item-quantity">${quantity.value}</span>
-												<input type="number" min="0" max="${quantity.value}" value="0">
+												<input class="alloc-quantity" type="number" min="0" max="${quantity.value}" value="0">
 											</div>
 										</c:forEach>
 								</td>
-								<td><span class="order-price">${item.price}</span></td>
-								<td><input type="button" class="success" value="승인">
-								<input type="button" class="reject" value="삭제"></td>
+								<td>
+									<span class="alloc-price">0</span>/
+									<span class="order-price">${item.price}</span>
+								</td>
+								<td>
+									<button class="success" >사입</button>
+									<button class="reject" >거부</button>
+								</td>
 							</tr>
 						</c:forEach>
 					</c:forEach>
@@ -153,7 +162,7 @@
 					</tfoot>
 				</table>
 				<div id="button-group">
-					<button id="ordersheet-button" class="btn" style="padding:15px; background:#EA6576; border-radius:2px; border:0; font-size:20px;">주문서출력</button>
+					<button id="ordersheet-button" class="btn" style="">주문서출력</button>
 					<button id="submit-button" class="btn" style="padding:15px; background:#EA6576; border-radius:2px; border:0; font-size:20px;">사입처리</button>
 				</div>
 			</div>
@@ -169,6 +178,10 @@
 			var rejectBtns = document.querySelectorAll('.reject');
 			for (i = 0; i < rejectBtns.length; i++) {
 				rejectBtns[i].addEventListener('click', rejectOrder, false);
+			}
+			var allocInput = document.querySelectorAll('.alloc-quantity');
+			for (i = 0; i < allocInput.length; i++) {
+				allocInput[i].addEventListener('keyup', calcSelectedOrder, false);
 			}
 			document.querySelector("#submit-button").addEventListener('click', checkOrders, false);
 			document.querySelector("#ordersheet-button").addEventListener('click', viewOrdersheet, false);
@@ -254,14 +267,19 @@
 			var totalPrice = 0;
 			var totalQuantity = 0;
 			var thisQuantity = 0;
-			for(var i = 0; i < checkLength; i++) {
-				if(checkList[i].checked) {
-					thisQuantity = checkList[i].parentNode.parentNode.querySelector('.item-quantity').value*1;
-					totalPrice += checkList[i].parentNode.parentNode.querySelector('.item-price').textContent * thisQuantity;
-					totalQuantity += checkList[i].parentNode.parentNode.querySelector('.item-quantity').value*1;
+			var allocQuantities = [];
+			var itemPrice = 0;
+			for (var i = 0; i < checkLength; i++) {
+				if (checkList[i].checked) {
+					itemPrice = checkList[i].parentNode.parentNode.querySelector(".item-price").textContent*1;
+					allocQuantities = checkList[i].parentNode.parentNode.querySelectorAll(".alloc-quantity");
+					for (var r = 0; r < allocQuantities.length; r++) {
+						totalPrice += itemPrice * allocQuantities[r].value*1;
+						totalQuantity += allocQuantities[r].value*1;
+					}
 				}
 			}
-			document.querySelector('#total-price span').textContent = totalPrice;
+			document.querySelector('#total-price span').textContent = totalPrice.toLocaleString().split(".")[0];
 			document.querySelector('#total-quantity span').textContent = totalQuantity;
 		}
 		
@@ -281,6 +299,10 @@
 			} else {
 				window.open("/admin/orders/ordersheet/"+itemIdlist);
 			}
+		}
+		
+		function calcAllocPrice(e) {
+			e.target.parentNode.parentNode.parentNode.querySelector(".item-price");
 		}
 		
 	</script>

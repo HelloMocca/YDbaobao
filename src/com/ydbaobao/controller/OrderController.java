@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.support.CommonUtil;
 import com.support.JSONResponseUtil;
+import com.support.Message;
 import com.support.ServletRequestUtil;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.service.CategoryService;
@@ -94,8 +96,15 @@ public class OrderController {
 	@RequestMapping(method = RequestMethod.POST)
 	public @ResponseBody String createOrder(@RequestParam int[] itemList, HttpSession session) throws IOException{
 		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
+		List<Item> items = itemService.readItemsByItemIds(CommonUtil.toStringArray(itemList));
+		if (items == null) return Message.BAD;
+		for (Item item : items) {
+			if (item.getItemStatus().equals(Item.ORDERED)) {
+				return Message.BAD;
+			}
+		}
 		itemService.orderItems(customerId, itemList);
-		return "OK";
+		return Message.OK;
 	}
 	
 	/**

@@ -166,4 +166,12 @@ public class CommonUtil {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		return sdf.format(today);
 	}
+	
+	public static String[] toStringArray(int[] array) {
+		String[] strArray = new String[array.length];
+		for (int i = 0; i < array.length; i++) {
+			strArray[i] = Integer.toString(i);
+		}
+		return strArray;
+	}
 }

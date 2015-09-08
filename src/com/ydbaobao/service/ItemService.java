@@ -42,6 +42,7 @@ public class ItemService {
 	 * @param itemStatus
 	 */
 	public void createItems(String customerId, List<String> size, List<Integer> quantities, int productId, String itemStatus) {
+		if (quantities == null) return;
 		int itemId;
 		Quantity quantity;
 		//사이즈 구분 없을 경우
@@ -56,9 +57,8 @@ public class ItemService {
 		}
 		for(int i=0; i< quantities.size(); i++){
 			quantity = itemDao.readQuantityByItemIdAndSize(itemId, size.get(i));
-			// 해당 사이즈가 0개일 경우
-			if (quantities.get(i) == 0 && quantity != null) {
-				itemDao.deleteQuantity(quantity.getQuantityId());
+			// 요청수량이 0개일 경우
+			if (quantities.get(i) == 0) {
 				continue;
 			}
 			if (quantity == null) {
@@ -74,7 +74,7 @@ public class ItemService {
 	}
 	
 	/**
-	 * 아이템 주문 및 아이템 가격 결정
+	 * 장바구니에서 아이템 주문 및 아이템 가격 결정
 	 * @param customerId
 	 * @param itemList
 	 */
@@ -83,15 +83,17 @@ public class ItemService {
 		Item originItem;
 		List<Quantity> quantities;
 		for (int itemId : itemList) {
-			// 같은조건으로 주문요청한 내역 조회
 			item = itemDao.readItem(itemId);
 			quantities = itemDao.readQuantityByItemId(itemId);
 			item.setQuantities(quantities);
+			// 같은조건으로 주문요청한 내역 조회
 			originItem = itemDao.readItemByCustomerIdAndProductIdAndItemStatus(customerId, item.getProduct().getProductId(), Item.ORDERED);		
 			// 존재할 경우 갯수 추가 및 기존 아이템 제거
 			if(originItem != null) {
 				for (Quantity quantity : quantities) {
-					itemDao.addItemQuantity(originItem.getItemId(), quantity.getSize(), quantity.getValue());
+					if (!itemDao.addItemQuantity(originItem.getItemId(), quantity.getSize(), quantity.getValue())) {
+						itemDao.createQuantity(new Quantity(0, originItem.getItemId(), quantity.getSize(), quantity.getValue()));
+					}
 				}
 				itemDao.deleteItem(itemId); // 기존의 quantity도 함께 사라짐
 			}
@@ -161,7 +163,12 @@ public class ItemService {
 	}
 	
 	public List<ItemPackage> readOrderedItemsOrderBy(String identifier) {
-		return identifier.equals("brandId") ? packageByBrand(itemDao.readOrderedItemsOrderBy(identifier)) : packageByCustomer(itemDao.readOrderedItemsOrderBy(identifier));
+		List<Item> items = itemDao.readOrderedItemsOrderBy(identifier);
+		for (Item item : items) {
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomer().getCustomerId())).getProductPrice());
+			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
+		}
+		return identifier.equals("brandId") ? packageByBrand(items) : packageByCustomer(items);
 	}
 	
 	public Item readItemByItemId(int itemId) {
@@ -171,7 +178,6 @@ public class ItemService {
 		product.setProductPrice(productService.readByDiscount(product.getProductId(), item.getCustomer()).getProductPrice());
 		return item;
 	}
-
 
 	public List<Item> readOrderedItemsByPaymentId(int paymentId) {
 		return itemDao.readItemsByPaymentId(paymentId);
@@ -187,7 +193,7 @@ public class ItemService {
 		if (!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
 			return false;
 		}
-		return itemDao.deleteItem(itemId) == 1 ? true : false;
+		return itemDao.deleteItem(itemId);
 	}
 
 	public boolean updateItemQuantity(int quantityId, int quantity) {

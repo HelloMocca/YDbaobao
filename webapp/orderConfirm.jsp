@@ -136,12 +136,12 @@
 		}
 		
 		document.querySelector('#order-btn').addEventListener('click', function() {
-			var checkList = document.querySelectorAll('tbody tr');
+			var checkList = document.querySelectorAll('tbody tr.item-container');
 			var checkLength = checkList.length;
-			var paramList = new Array();
+			var paramList = [];
 			var param = 'itemList=';
 			for(var i = 0; i < checkLength; i++) {
-				paramList.push(checkList[i].getAttribute('data-id'));
+				paramList.push(checkList[i].dataset.id);
 			}
 			param += paramList;
 			order(param);
