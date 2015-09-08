@@ -79,7 +79,7 @@ public class ProductService {
 	}
 	
 	public Product readByDiscount(int productId, SessionCustomer customer) {
-		return readByDiscount(productId, new Customer(customer.getSessionId()));
+		return readByDiscount(productId, (customer == null) ? null : new Customer(customer.getSessionId()));
 	}
 	
 	public List<Product> readByProductName(String termsForQuery, int page, int productsPerPage, SessionCustomer sessionCustomer) {

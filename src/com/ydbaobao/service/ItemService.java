@@ -257,7 +257,7 @@ public class ItemService {
 	public List<Item> readOrderedItemsByCustomerId(String customerId) {
 		List<Item> items = itemDao.readOrderedItemsByCustomerId(customerId);
 		for (Item item : items) {
-			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), customerId).getProductPrice());
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(customerId)).getProductPrice());
 			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 		}
 		return items;
@@ -265,7 +265,12 @@ public class ItemService {
 	
 
 	public List<ItemPackage> readOrderedItemsByBrandId(int brandId) {
-		return packageByBrand(itemDao.readOrderedItemsByBrandId(brandId));
+		List<Item> items = itemDao.readOrderedItemsByBrandId(brandId);
+		for (Item item : items) {
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomer().getCustomerId())).getProductPrice());
+			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
+		}
+		return packageByBrand(items);
 	}
 	
 	public List<ItemPackage> packageByBrand(List<Item> items){

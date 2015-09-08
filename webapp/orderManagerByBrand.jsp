@@ -44,6 +44,12 @@
 		color: #F15F5F;
 	}
 	
+	#button-group {
+		float: right;
+		display:table;
+		padding:25px; margin-bottom:25px;
+	}
+	
 	button.info, button.success, button.reject {
 		border: 0;
 		padding: 5px;
@@ -71,6 +77,17 @@
 		font-weight:800;
 		border-top:2px solid #ccc;
 	}
+	
+	.quantity-container div span {
+		display:inline-block;
+		width:45px;
+	}
+	.quantity-container div .item-quantity {
+		font-weight:bold;
+	}
+	.quantity-container div input {
+		width:45px;
+	}
 </style>
 </head>
 <body>
@@ -89,12 +106,10 @@
 						<tr>
 							<th><input id="select-all-checkbox" type="checkbox" ></th>
 							<th>주문자</th>
-							<th colspan="2">상품명</th>
-							<th style="width:35px">사이즈</th>
+							<th colspan="2" width="130px">상품명</th>
 							<th>판매가</th>
-							<th style="width:45px;">주문</th>
-							<th>사입수량</th>
-							<th>주문금액</th>
+							<th>사이즈 | 주문수량 | 사입수량</th>
+							<th>금액</th>
 							<th> </th>
 						</tr>
 						<c:forEach var="item" items="${brandPack.items}">
@@ -103,10 +118,16 @@
 								<td><span class="item-customer">${item.customer.customerId}</span></td>
 								<td class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="item-image" src="/image/products/${item.product.productImage}"></a></td>
 								<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name">${item.product.productName}</span></a></td>
-								<td><span class="item-size">${item.size}</span></td>
 								<td><span class="item-price">${item.product.productPrice}</span></td>
-								<td><span class="ordered-quantity">${item.quantity}</span></td>
-								<td><input style="width:40px;" type="number" class ="item-quantity" name="quantity" value ="${item.quantity}" onchange="checkValidQuantity(this)"/>
+								<td class="quantity-container">
+										<c:forEach var="quantity" items="${item.quantities}">
+											<div>
+												<span>${quantity.size}</span>
+												<span class="item-quantity">${quantity.value}</span>
+												<input type="number" min="0" max="${quantity.value}" value="0">
+											</div>
+										</c:forEach>
+								</td>
 								<td><span class="order-price">${item.price}</span></td>
 								<td><input type="button" class="success" value="승인">
 								<input type="button" class="reject" value="삭제"></td>
@@ -131,9 +152,9 @@
 						</tr>
 					</tfoot>
 				</table>
-				<div id="button-group" style="padding:25px; margin-bottom:25px;">
-					<button id="ordersheet-button" class="btn" style="padding:15px; float:right; background:#EA6576; border-radius:2px; border:0; font-size:20px;">주문서출력</button>
-					<button id="submit-button" class="btn" style="padding:15px; float:right; background:#EA6576; border-radius:2px; border:0; font-size:20px;">사입처리</button>
+				<div id="button-group">
+					<button id="ordersheet-button" class="btn" style="padding:15px; background:#EA6576; border-radius:2px; border:0; font-size:20px;">주문서출력</button>
+					<button id="submit-button" class="btn" style="padding:15px; background:#EA6576; border-radius:2px; border:0; font-size:20px;">사입처리</button>
 				</div>
 			</div>
 		</div>
