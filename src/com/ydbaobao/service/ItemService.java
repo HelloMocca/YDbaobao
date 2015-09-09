@@ -11,11 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.support.CommonUtil;
 import com.ydbaobao.dao.ItemDao;
 import com.ydbaobao.dao.ProductDao;
 import com.ydbaobao.model.Item;
-import com.ydbaobao.model.Payment;
 import com.ydbaobao.model.Product;
 import com.ydbaobao.model.Quantity;
 import com.ydbaobao.model.Customer;
@@ -23,6 +21,7 @@ import com.ydbaobao.model.Customer;
 @Service
 @Transactional
 public class ItemService {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
 	@Resource
 	private ItemDao itemDao;
@@ -158,14 +157,15 @@ public class ItemService {
 		return items;
 	}
 	
-	public List<Item> readOrderedItems() {
-		return itemDao.readOrderedItems();
-	}
-	
+	/**
+	 * identifier 기준으로 정렬된 주문되어있는 아이템 조회
+	 * @param identifier
+	 * @return List<Item>
+	 */
 	public List<ItemPackage> readOrderedItemsOrderBy(String identifier) {
 		List<Item> items = itemDao.readOrderedItemsOrderBy(identifier);
 		for (Item item : items) {
-			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomer().getCustomerId())).getProductPrice());
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomerId())).getProductPrice());
 			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 		}
 		return identifier.equals("brandId") ? packageByBrand(items) : packageByCustomer(items);
@@ -190,18 +190,13 @@ public class ItemService {
 	 * @return 요청하는 customerId와 주문의 customerId가 다를경우 false, 쿼리결과 적용된 record가 없을경우 false 반환.
 	 */
 	public boolean deleteItem(String customerId, int itemId) {
-		if (!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
+		if (!itemDao.readItem(itemId).getCustomerId().equals(customerId)){
 			return false;
 		}
 		return itemDao.deleteItem(itemId);
 	}
 
 	public boolean updateItemQuantity(int quantityId, int quantity) {
-//		if(!itemDao.readItem(itemId).getCustomer().getCustomerId().equals(customerId)){
-//			//TODO 아이템 고객아이디와 수정하려는 고객아이디가 다를경우 예외처리.
-//			//ControllerExceptionHandler 을 이용하여 return status로 보내줘서 처리하면 좋을 듯
-//			return false;
-//		}
 		itemDao.updateItemQuantity(quantityId, quantity);
 		return true;
 	}
@@ -273,7 +268,7 @@ public class ItemService {
 	public List<ItemPackage> readOrderedItemsByBrandId(int brandId) {
 		List<Item> items = itemDao.readOrderedItemsByBrandId(brandId);
 		for (Item item : items) {
-			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomer().getCustomerId())).getProductPrice());
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomerId())).getProductPrice());
 			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 		}
 		return packageByBrand(items);
@@ -303,7 +298,7 @@ public class ItemService {
 		String prevCustomerId = "";
 		int i = 0;
 		for (Item item : items) {
-			String currCustomerId = item.getCustomer().getCustomerId();
+			String currCustomerId = item.getCustomerId();
 			if (!prevCustomerId.equals(currCustomerId)) {
 				customerPacks.add(new ItemPackage(currCustomerId));
 				mapper.put(currCustomerId, i); i++;
@@ -338,5 +333,9 @@ public class ItemService {
 
 	public List<Item> readItemsByItemIds(String[] itemIds) {
 		return itemDao.readItemByItemIds(itemIds);
+	}
+
+	public Item readItemByQuantityId(int quantityId) {
+		return itemDao.readItemByQuantityId(quantityId);
 	}
 }

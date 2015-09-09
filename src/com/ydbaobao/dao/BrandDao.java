@@ -20,6 +20,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.ydbaobao.model.Brand;
+import com.ydbaobao.model.Item;
 
 @Repository
 public class BrandDao extends JdbcDaoSupport {
@@ -39,7 +40,11 @@ public class BrandDao extends JdbcDaoSupport {
 				return new Brand(rs.getInt("brandId"), rs.getString("brandName"), rs.getInt("brandCount"), rs.getInt("discount_1"), rs.getInt("discount_2"), rs.getInt("discount_3"), rs.getInt("discount_4"), rs.getInt("discount_5"), rs.getString("brandSize"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm);
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	public List<Brand> readBrandsByCategoryId(int categoryId) {
@@ -50,18 +55,26 @@ public class BrandDao extends JdbcDaoSupport {
 				return new Brand(rs.getInt("brandId"), rs.getString("brandName"), rs.getInt("brandCount"), rs.getInt("discount_1"), rs.getInt("discount_2"), rs.getInt("discount_3"), rs.getInt("discount_4"), rs.getInt("discount_5"), rs.getString("brandSize"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm, categoryId);
+		try {
+			return getJdbcTemplate().query(sql, rm, categoryId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
-	public List<Brand> findBrands(String searchValue) {
-		String sql = "select * from BRANDS where brandName like \"%" + searchValue + "%\"";
+	public List<Brand> readBrandsByKeyword(String keyword) {
+		String sql = "select * from BRANDS where brandName like '"+keyword+"' order by brandName";
 		RowMapper<Brand> rm = new RowMapper<Brand>() {
 			@Override
 			public Brand mapRow(ResultSet rs, int rowNum) throws SQLException {
 				return new Brand(rs.getInt("brandId"), rs.getString("brandName"), rs.getInt("brandCount"), rs.getInt("discount_1"), rs.getInt("discount_2"), rs.getInt("discount_3"), rs.getInt("discount_4"), rs.getInt("discount_5"), rs.getString("brandSize"));
 			}
 		};
-		return getJdbcTemplate().query(sql, rm);
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 
 	public int createBrand(final Brand brand) {
@@ -137,17 +150,6 @@ public class BrandDao extends JdbcDaoSupport {
 			return null;
 		}
 	}
-
-	public List<Brand> search(String firstLetter) {
-		String sql = "select * from BRANDS where brandName like \"" + firstLetter + "%\" order by brandName";
-		RowMapper<Brand> rm = new RowMapper<Brand>() {
-			@Override
-			public Brand mapRow(ResultSet rs, int rowNum) throws SQLException {
-				return new Brand(rs.getInt("brandId"), rs.getString("brandName"), rs.getInt("brandCount"), rs.getInt("discount_1"), rs.getInt("discount_2"), rs.getInt("discount_3"), rs.getInt("discount_4"), rs.getInt("discount_5"), rs.getString("brandSize"));
-			}
-		};
-		return getJdbcTemplate().query(sql, rm);
-	}
 	
 	public int increaseCount(long brandId) {
 		String sql = "update BRANDS set brandCount = brandCount+1 where brandId = ?";
@@ -162,5 +164,20 @@ public class BrandDao extends JdbcDaoSupport {
 	public void resetCount() {
 		String sql = "update BRANDS set brandCount = 0";
 		getJdbcTemplate().update(sql);
+	}
+
+	public List<Brand> readOrderedBrandList() {
+		String sql = "select * from BRANDS A, ITEMS B, PRODUCTS C where A.brandId = C.brandId AND C.productId = B.productId AND B.itemStatus = '"+Item.ORDERED+"'";
+		RowMapper<Brand> rm = new RowMapper<Brand>() {
+			@Override
+			public Brand mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Brand(rs.getInt("brandId"), rs.getString("brandName"));
+			}
+		};
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 }

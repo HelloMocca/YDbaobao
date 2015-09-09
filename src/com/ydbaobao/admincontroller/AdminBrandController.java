@@ -70,7 +70,7 @@ public class AdminBrandController {
 	 */
 	@RequestMapping("/find")
 	public ResponseEntity<Object> find(@RequestParam String searchValue) {
-		return JSONResponseUtil.getJSONResponse(brandService.findBrands(searchValue), HttpStatus.OK);
+		return JSONResponseUtil.getJSONResponse(brandService.readBrandsByKeyword("%"+searchValue+"%"), HttpStatus.OK);
 	}
 
 	/**

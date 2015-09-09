@@ -33,6 +33,7 @@ import com.ydbaobao.service.ProductService;
 @Controller
 @RequestMapping("/admin/products")
 public class AdminProductController {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(AdminProductController.class);
 	
 	@Resource

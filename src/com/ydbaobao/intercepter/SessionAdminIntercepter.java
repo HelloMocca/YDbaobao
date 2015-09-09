@@ -9,6 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 public class SessionAdminIntercepter extends HandlerInterceptorAdapter {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(SessionAdminIntercepter.class);
 	
 	@Override

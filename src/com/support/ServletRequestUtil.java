@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.ydbaobao.model.SessionCustomer;
 
 public class ServletRequestUtil {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ServletRequestUtil.class);
 
 	private ServletRequestUtil() {

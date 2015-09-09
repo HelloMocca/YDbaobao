@@ -45,9 +45,9 @@
 		<div id="content">
 			<h1>주문된 브랜드 목록</h1>
 			<ul id="orderedBrandList">
-				<c:forEach var="brandPack" items="${brandPacks}">
+				<c:forEach var="brand" items="${brandList}">
 					<li class='list-item'>
-						<a href="/admin/orders/brand/${brandPack.items[0].product.brand.brandId}"><span>${brandPack.key}</span></a>
+						<a href="/admin/orders/brand/${brand.brandId}"><span>${brand.brandName}</span></a>
 					</li>
 				</c:forEach>
 			</ul>

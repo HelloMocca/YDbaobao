@@ -15,15 +15,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ydbaobao.model.Item;
+import com.ydbaobao.service.BrandService;
 import com.ydbaobao.service.ItemService;
 
 @Controller
 @RequestMapping("/admin/orders")
 public class AdminOrderController {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(AdminOrderController.class);
 	
 	@Resource
 	private ItemService itemService;
+	
+	@Resource
+	private BrandService brandService;
 
 	/**
 	 * 주문된 브랜드의 리스트 출력 페이지 요청
@@ -32,7 +37,7 @@ public class AdminOrderController {
 	 */
 	@RequestMapping(value = "/brands", method = RequestMethod.GET)
 	public String manageOrderByBrands(Model model) {
-		model.addAttribute("brandPacks", itemService.readOrderedItemsOrderBy("brandId"));
+		model.addAttribute("brandList", brandService.readOrderedBrandList());
 		return "orderManagerBrandList";
 	}
 	

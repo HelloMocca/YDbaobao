@@ -37,7 +37,8 @@ public class BrandController {
 	 */
 	@RequestMapping(value = "/{firstLetter}", method = RequestMethod.GET)
 	public ResponseEntity<Object> readByFirstLetter(@PathVariable String firstLetter) {
-		return JSONResponseUtil.getJSONResponse(brandService.search(firstLetter), HttpStatus.OK);
+		if (firstLetter.equals("all")) firstLetter = "";
+		return JSONResponseUtil.getJSONResponse(brandService.readBrandsByKeyword(firstLetter+"%"), HttpStatus.OK);
 	}
 	
 	/**

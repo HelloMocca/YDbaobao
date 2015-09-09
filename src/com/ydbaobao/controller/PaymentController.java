@@ -26,7 +26,7 @@ public class PaymentController {
 	private PaymentService paymentService;
 	
 	/**
-	 * 
+	 * Payment 페이지 요청, 세션이 없을경우 로그인페이지로 이동
 	 * @param session
 	 * @param model
 	 * @return payment.jsp
@@ -34,11 +34,17 @@ public class PaymentController {
 	 */
 	@RequestMapping(value="", method = RequestMethod.GET)
 	public String readPage(HttpSession session, Model model) throws IOException {
-		String customerId = ServletRequestUtil.getCustomerIdFromSession(session);
+		if(!ServletRequestUtil.hasAuthorizationFromCustomer(session)) return "loginForm";
 		model.addAttribute("categories", categoryService.readWithoutUnclassifiedCategory());
 		return "payment";
 	}
 	
+	/**
+	 * 세션의 customerId에 해당하는 payment 정보 json 형태로 반환
+	 * @param session
+	 * @return 
+	 * @throws IOException
+	 */
 	@RequestMapping(value = "/read", method = RequestMethod.GET)
 	public ResponseEntity<Object> readPayments(HttpSession session) throws IOException {
 		return JSONResponseUtil.getJSONResponse(paymentService.readPaymentsByCustomerId(ServletRequestUtil.getCustomerIdFromSession(session)), HttpStatus.OK);

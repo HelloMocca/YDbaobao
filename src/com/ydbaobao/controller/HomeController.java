@@ -32,6 +32,7 @@ import com.ydbaobao.service.ProductService;
 
 @Controller
 public class HomeController {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
 	@Resource

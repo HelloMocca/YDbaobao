@@ -14,6 +14,7 @@ import com.support.ServletRequestUtil;
 import com.ydbaobao.service.CustomerService;
 
 public class GradeCheckIntercepter extends HandlerInterceptorAdapter {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(GradeCheckIntercepter.class);
 
 	@Resource

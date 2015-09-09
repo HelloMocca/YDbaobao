@@ -27,10 +27,6 @@ public class PaymentDao extends JdbcDaoSupport {
 		setDataSource(dataSource);
 	}
 	
-	private int getRandomId() {
-		return (int) (Math.random() * 2000000000) + 1;
-	}
-	
 	public int createPayment(Payment payment) {
 		String sql = "insert into PAYMENTS value(default, ?, ?, ?, ?)";
 		if (payment.getPaymentDate() != null) {

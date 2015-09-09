@@ -20,13 +20,21 @@ public class BrandService {
 	private ProductDao productDao;
 	@Resource
 	private ItemService itemService;
-
-	public Brand readBrandByBrandId(int brandId) {
-		return brandDao.readBrandByBrandId(brandId);
+	
+	public int createBrand(Brand brand) {
+		if(brandDao.readBrandByBrandName(brand.getBrandName()) != null) {
+			return -1;
+		}
+		return brandDao.createBrand(brand);
 	}
+
 	public List<Brand> readBrands() {
 		return brandDao.readBrands();
 	}
+	
+	public Brand readBrandByBrandId(int brandId) {
+		return brandDao.readBrandByBrandId(brandId);
+	}	
 	
 	public List<Brand> readBrandsByCategoryId(int categoryId) {
 		List<Brand> brands = brandDao.readBrandsByCategoryId(categoryId);
@@ -39,17 +47,14 @@ public class BrandService {
 		return brands;
 	}
 	
-	public List<Brand> findBrands(String searchValue) {
-		return brandDao.findBrands(searchValue);
+	public List<Brand> readOrderedBrandList() {
+		return brandDao.readOrderedBrandList();
 	}
-
-	public int createBrand(Brand brand) {
-		if(brandDao.readBrandByBrandName(brand.getBrandName()) != null) {
-			return -1;
-		}
-		return brandDao.createBrand(brand);
+	
+	public List<Brand> readBrandsByKeyword(String keyword) {
+		return brandDao.readBrandsByKeyword(keyword);
 	}
-
+	
 	/**
 	 * 브랜드 정보 변경
 	 * 등급 할인율 변경시 현재 주문 진행중인 모든 아이템에 새로운 가격 적용
@@ -73,12 +78,5 @@ public class BrandService {
 	public boolean deleteBrand(String brandId) {
 		if(brandDao.deleteBrand(brandId) == 1) return true;
 		return false;
-	}
-
-	public List<Brand> search(String firstLetter) {
-		if(firstLetter.equals("all")) {
-			return brandDao.search("");
-		}
-		return brandDao.search(firstLetter);
 	}
 }

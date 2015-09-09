@@ -330,6 +330,28 @@ public class ItemDao extends JdbcDaoSupport {
 		}
 	}
 	
+	public Item readItemByQuantityId(int quantityId) {
+		String sql = "select * from ITEMS A, QUANTITY B where A.itemId = B.itemId AND B.quantityId = ?";
+		RowMapper<Item> rm = new RowMapper<Item>() {
+			@Override
+			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Item(
+						rs.getInt("itemId"), 
+						new Customer(rs.getString("customerId")),
+						new Product(rs.getInt("productId"),rs.getString("productName"), 
+								rs.getInt("productPrice"), rs.getString("productImage"), 
+								rs.getString("productSize"), rs.getInt("isSoldout"), 
+						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
+						rs.getInt("price"), null);
+			}
+		};
+		try {
+			return getJdbcTemplate().queryForObject(sql, rm, quantityId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
+	}
+	
 	/**
 	 * Item의 상태를 변환
 	 * 카트 		: "I"

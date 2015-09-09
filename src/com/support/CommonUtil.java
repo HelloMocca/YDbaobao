@@ -19,6 +19,7 @@ import com.ydbaobao.dao.AdminConfigDao;
 
 @Component
 public class CommonUtil {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(CommonUtil.class);
 	
 	public static int productsPerPage = 16;

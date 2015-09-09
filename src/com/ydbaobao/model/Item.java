@@ -100,6 +100,10 @@ public class Item {
 	public void setPayment(Payment payment) {
 		this.payment = payment;
 	}
+	
+	public String getCustomerId() {
+		return customer.getCustomerId();
+	}
 
 	@Override
 	public int hashCode() {

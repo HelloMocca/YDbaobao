@@ -25,7 +25,7 @@ public class BrandDaoTest {
 	
 	@Test
 	public void search() {
-		List<Brand> list = brandDao.search("A");
+		List<Brand> list = brandDao.readBrandsByKeyword("%A%");
 		assertNotNull(list);
 		for (Brand brand : list) {
 			logger.debug(brand.toString());

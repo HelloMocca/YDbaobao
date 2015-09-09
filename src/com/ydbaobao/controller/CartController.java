@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.support.JSONResponseUtil;
+import com.support.Message;
 import com.support.ServletRequestUtil;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.service.CategoryService;
@@ -27,6 +28,7 @@ import com.ydbaobao.service.ItemService;
 @Controller
 @RequestMapping("/shop/carts")
 public class CartController {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(CartController.class);
 	@Resource
 	ItemService itemService;
@@ -73,7 +75,9 @@ public class CartController {
 	 */
 	@RequestMapping(value="/{itemId}", method = RequestMethod.PUT)
 	public @ResponseBody String cartUpdate(@RequestParam int quantityId, @RequestParam int quantity, @PathVariable int itemId, Model model, HttpSession session) throws IOException {
-		String customerId = ServletRequestUtil.getCustomerIdFromSession(session); 
+		if (!itemService.readItemByQuantityId(quantityId).getCustomerId()
+				.equals(ServletRequestUtil.getCustomerIdFromSession(session))) 
+			return Message.BAD;
 		if (itemService.updateItemQuantity(quantityId, quantity)) {
 			return "OK";
 		}
