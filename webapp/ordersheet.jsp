@@ -4,8 +4,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8" />
 <title>관리자페이지::주문서</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <link rel="stylesheet" href="/css/admin.css">
 <link rel="stylesheet" href="/css/font-awesome.min.css">
 <style>
@@ -128,10 +129,14 @@
 						<c:forEach var="item" items="${itemList}">
 							<tr data-id="${item.itemId}">
 								<td><span>${item.itemId}</span></td>
-								<td width="100px" class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="" src="/image/products/${item.product.productImage}"></a></td>
-								<td width="400px" class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name" style="margin-left:25px;">${item.product.productName}</span></a></td>
-								<td><span class="item-size">${item.size}</span></td>
-								<td><span class="ordered-quantity">${item.quantity}</span></td>
+								<td width="50px" class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="" style="width:50px;" src="/image/products/${item.product.productImage}"></a></td>
+								<td width="50px" class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name" style="margin-left:25px;">${item.product.productName}</span></a></td>
+								<td>
+								<c:forEach var="quantity" items="${item.quantities}">
+									<div><span class="item-size">${quantity.size}</span></div>
+									<div><span class="ordered-quantity">${quantity.value}</span></div>
+								</c:forEach>
+								</td>
 							</tr>
 						</c:forEach>
 					</tbody>

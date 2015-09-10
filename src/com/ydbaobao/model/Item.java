@@ -1,5 +1,6 @@
 package com.ydbaobao.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Item {
@@ -43,6 +44,17 @@ public class Item {
 		this.itemStatus = itemStatus;
 		this.price = price;
 		this.payment = payment;
+	}
+	
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Payment payment, Quantity quantity) {
+		this.itemId = itemId;
+		this.customer = customer;
+		this.product = product;
+		this.itemStatus = itemStatus;
+		this.price = price;
+		this.payment = payment;
+		quantities = new ArrayList<Quantity>();
+		this.quantities.add(quantity);
 	}
 
 	public int getItemId() {

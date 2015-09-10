@@ -4,9 +4,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="http://fonts.googleapis.com/css?family=Lobster"
-	rel="stylesheet" type="text/css" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <link rel="stylesheet" href="/css/main.css" />
 <link rel="stylesheet" href="/css/font-awesome.min.css" />
 <title>카테고리 별 상품 보기</title>

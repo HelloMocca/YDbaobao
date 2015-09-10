@@ -334,6 +334,10 @@ public class ItemService {
 	public List<Item> readItemsByItemIds(String[] itemIds) {
 		return itemDao.readItemByItemIds(itemIds);
 	}
+	
+	public List<Item> readOrderedProductByItemIds(String[] itemIds) {
+		return itemDao.readOrderedProductByItemIds(itemIds);
+	}
 
 	public Item readItemByQuantityId(int quantityId) {
 		return itemDao.readItemByQuantityId(quantityId);

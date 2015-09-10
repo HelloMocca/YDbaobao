@@ -109,7 +109,7 @@ public class AdminOrderController {
 	 */
 	@RequestMapping(value = "/ordersheet/{itemIdList}")
 	public String requestOrdersheet(@PathVariable String itemIdList, Model model) {
-		List<Item> items = itemService.readItemsByItemIds(itemIdList.split(","));
+		List<Item> items = itemService.readOrderedProductByItemIds(itemIdList.split(","));
 		model.addAttribute("itemList", items);
 		return "ordersheet";
 	}

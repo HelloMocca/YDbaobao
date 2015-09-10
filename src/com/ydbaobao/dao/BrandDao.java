@@ -167,11 +167,11 @@ public class BrandDao extends JdbcDaoSupport {
 	}
 
 	public List<Brand> readOrderedBrandList() {
-		String sql = "select * from BRANDS A, ITEMS B, PRODUCTS C where A.brandId = C.brandId AND C.productId = B.productId AND B.itemStatus = '"+Item.ORDERED+"'";
+		String sql = "SELECT A.brandId, A.brandName, count(A.brandName) as orderCount from BRANDS A, ITEMS B, PRODUCTS C where A.brandId = C.brandId AND C.productId = B.productId AND B.itemStatus = '"+Item.ORDERED+"' GROUP BY A.brandName";
 		RowMapper<Brand> rm = new RowMapper<Brand>() {
 			@Override
 			public Brand mapRow(ResultSet rs, int rowNum) throws SQLException {
-				return new Brand(rs.getInt("brandId"), rs.getString("brandName"));
+				return new Brand(rs.getInt("brandId"), rs.getString("brandName"), rs.getInt("orderCount"));
 			}
 		};
 		try {

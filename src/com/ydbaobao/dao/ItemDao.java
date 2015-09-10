@@ -311,6 +311,34 @@ public class ItemDao extends JdbcDaoSupport {
 			return null;
 		}
 	}
+	
+	public List<Item> readOrderedProductByItemIds(String[] itemIds) {
+		String condition = "";
+		for (int i = 0; i < itemIds.length; i++) {
+			if (i != 0) condition += " OR ";
+			condition += "A.itemId = "+itemIds[i];
+		}
+		String sql = "select *, sum(A.value) as value from QUANTITY A, ITEMS B, PRODUCTS C, BRANDS D where B.itemStatus = 'S' AND B.productId = C.productId AND C.brandId = D.brandId AND ( "+condition+" ) group by B.productId, A.size";
+		RowMapper<Item> rm = new RowMapper<Item>() {
+			@Override
+			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Item(
+						rs.getInt("itemId"), 
+						new Customer(rs.getString("customerId")),
+						new Product(rs.getInt("productId"),rs.getString("productName"), 
+								rs.getInt("productPrice"), rs.getString("productImage"), 
+								rs.getString("productSize"), rs.getInt("isSoldout"), 
+						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
+						rs.getInt("price"), null, 
+						new Quantity(rs.getInt("quantityId"), rs.getInt("itemId"), rs.getString("size"), rs.getInt("value")));
+			}
+		};
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
+	}
 
 	public Item readItemByCustomerIdAndProductIdAndItemStatus(String customerId, int productId, String itemStatus) {
 		String sql = "select * from ITEMS where customerId = ? and productId = ? and itemStatus = ?";
