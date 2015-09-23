@@ -67,8 +67,6 @@ public class Quantity {
 		Quantity other = (Quantity) obj;
 		if (itemId != other.itemId)
 			return false;
-		if (quantityId != other.quantityId)
-			return false;
 		if (size == null) {
 			if (other.size != null)
 				return false;

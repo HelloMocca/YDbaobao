@@ -127,7 +127,7 @@
 								<td class="quantity-container">
 										<c:forEach var="quantity" items="${item.quantities}">
 											<div>
-												<span>${quantity.size}</span>
+												<span class="item-size">${quantity.size}</span>
 												<span class="item-quantity">${quantity.value}</span>
 												<input class="alloc-quantity" type="number" min="0" max="${quantity.value}" value="0">
 											</div>
@@ -191,33 +191,44 @@
 		function checkOrders(e) {
 			var checkList = document.querySelectorAll('.item-check');
 			var checkLength = checkList.length;
-			var itemlist = [];
-			var quantitylist = [];
+			var json = '[';
+			var currItemId;
 			for(var i = 0; i < checkLength; i++) {
 				if(checkList[i].checked) {
-					itemlist.push(checkList[i].parentNode.parentNode.getAttribute('data-id')*1);
-					quantitylist.push(checkList[i].parentNode.parentNode.querySelector('.item-quantity').value*1);
+					currItemId = checkList[i].parentNode.parentNode.getAttribute('data-id');
+					if (json != '[') json += ",";
+					var quantityContainers = checkList[i].parentNode.parentNode.querySelectorAll(".quantity-container div");
+					json +='{';
+					json += '"itemId":'+currItemId;
+					json += ', "quantities":[';
+					for (var r = 0; r < quantityContainers.length; r++) {
+						if (r != 0) json +=",";
+						var quantity = quantityContainers[r].querySelector('.alloc-quantity').value;
+						var size = quantityContainers[r].querySelector('.item-size').textContent;
+						json += '{"quantityId":0, "itemId":'+currItemId+', "size":"'+size+'", "value":'+quantity+'}';
+					}
+					json += "] }";
 				}
 			}
-			if (itemlist.length === 0) {
-				alert("선택된 상품이 없습니다.");
-			} else {
-				ydbaobao.ajax({
-					method:"post",
-					url:"/admin/orders/accept",
-					param: "itemList="+itemlist+"&quantityList="+quantitylist,
-					success: function(req) {
-						if (req.responseText === "success") {
-							alert("사입처리 완료.");
-							for(var i = 0; i < checkLength; i++) { //처리된 아이템 제거
-								if(checkList[i].checked) {
-									checkList[i].parentNode.parentNode.remove();
-								}
+			json += "]";
+			console.log(json);
+			ydbaobao.ajax({
+				method:"post",
+				url:"/admin/orders/accept",
+				param: "itemList="+json,
+				success: function(req) {
+					if (req.responseText === "OK") {
+						alert("사입처리 완료.");
+						/* for(var i = 0; i < checkLength; i++) { //처리된 아이템 제거
+							if(checkList[i].checked) {
+								checkList[i].parentNode.parentNode.remove();
 							}
-						}
+						} */
+					} else {
+						alert("사입처리 실패!");
 					}
-				});
-			}
+				}
+			});
 		}
 		
 		function rejectOrder(e) {

@@ -120,6 +120,10 @@ public class ItemService {
 		itemDao.updateItemPrice(item.getItemId(), totalPrice);
 	}
 	
+	public void updateItemPriceByItemId(int itemId) {
+		updateItemPrice(itemDao.readItem(itemId));
+	}
+	
 	public void updateItemPriceByProductId(int productId) {
 		List<Item> items = itemDao.readItemsByProductId(productId);
 		for (Item item : items) {
@@ -201,45 +205,66 @@ public class ItemService {
 		return true;
 	}
 
-	public boolean acceptOrder(String[] itemIdList, String[] quantityList) {
-//		Item item;
-//		int price = 0;
-//		int quantity;
-//		int totalPrice;
-//		Payment payment;
-//		List<Customer> customers = new ArrayList<Customer>();
-//		List<Item> items = new ArrayList<Item>();
-//		//customer Listing
-//		for (int i = 0; i < itemIdList.length; i++) {
-//			item = itemDao.readItem(Integer.valueOf(itemIdList[i]));
-//			items.add(item);
-//			if(!customers.contains(item.getCustomer())) {
-//				customers.add(item.getCustomer());
-//			}
-//		}
-//		for (Customer thisCustomer : customers) {
-//			int i = 0;
-//			price = 0;
-//			totalPrice = 0;
-//			payment = paymentService.readPaymentByCustomerIdDate(thisCustomer.getCustomerId(), CommonUtil.getDate());
-//			for (Item thisItem : items) {	
-//				if (thisItem.getCustomer().equals(thisCustomer)) {
-//					quantity = Integer.valueOf(quantityList[i]);
-//					price = productService.readByDiscount(thisItem.getProduct().getProductId(), thisItem.getCustomer()).getProductPrice();
-//					totalPrice += price * quantity;
-//					itemDao.createItem(thisCustomer.getCustomerId(), thisItem.getProduct().getProductId(), thisItem.getSize(), quantity, "P", price * quantity, payment.getPaymentId());
-//					itemDao.addItemQuantity(thisItem.getItemId(), -quantity);
-//					if(thisItem.getQuantity()-quantity == 0) {
-//						itemDao.deleteItem(thisItem.getItemId());
-//					} else {
-//						itemDao.updateItemPrice(thisItem.getItemId(), (thisItem.getQuantity()-quantity) * price);
-//					}
-//				}
-//				i++;
-//			}
-//			paymentService.updatePayment(new Payment(payment.getPaymentId(), "P", payment.getAmount() +  totalPrice));
-//		}
+	public boolean acceptOrder(Item item) {
+		Item originItem = itemDao.readItem(item.getItemId());
+		int updatedItemId = item.getItemId();
+		Item sameConditionItem = itemDao.readItemByCustomerIdAndProductIdAndItemStatus(originItem.getCustomerId(), originItem.getProduct().getProductId(), Item.ACCEPTED);
+		originItem.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
+		List<Quantity> originQuantities = originItem.getQuantities();
+		List<Quantity> acceptQuantities = item.getQuantities();
+		//수량 전부를 사입할 경우 acceptAllQuantity()
+		if (acceptQuantities.equals(originQuantities)) {
+			//사입상태인 동일 상품이 있을경우 합치고 기존아이템 삭제
+			if (sameConditionItem != null) {
+				this.mergeQuantity(itemDao.readQuantityByItemId(sameConditionItem.getItemId()), originQuantities);
+				updatedItemId = sameConditionItem.getItemId();
+				itemDao.deleteItem(originItem.getItemId());
+			} else {
+				//없을경우 기존것을 변경
+				itemDao.updateItemStatus(item.getItemId(), Item.ACCEPTED);
+			}
+		} else {
+			//수량 전부를 사입하지 않을경우 acceptPartOfQuantity()
+			//기존의 Quantity에서 사입한 수량만큼 차감
+			for (Quantity acceptQuantity : acceptQuantities) {
+				for (Quantity originQuantity : originQuantities) {
+					if (acceptQuantity.getSize().equals(originQuantity.getSize())) {
+						itemDao.updateItemQuantity(originQuantity.getQuantityId(), originQuantity.getValue() - acceptQuantity.getValue());
+					}
+				}
+			}
+			//사입상태인 동일 상품이 있을경우 합침
+			if (sameConditionItem != null) {
+				this.mergeQuantity(itemDao.readQuantityByItemId(sameConditionItem.getItemId()), acceptQuantities);
+				updatedItemId = sameConditionItem.getItemId();
+			}
+			//동일 상품이 없을경우 Item과 Quantity를 새로 만듬
+			int itemId = itemDao.createItem(originItem.getCustomerId(), originItem.getProduct().getProductId(), Item.ACCEPTED);
+			for (Quantity acceptQuantity : acceptQuantities) {
+				itemDao.createQuantity(new Quantity(0, itemId, acceptQuantity.getSize(), acceptQuantity.getValue()));
+			}
+		}
+		updateItemPriceByItemId(updatedItemId);
 		return true;
+	}
+
+	private void mergeQuantity(List<Quantity> mergedQuantities,
+			List<Quantity> mergingQuantities) {
+		boolean merged;
+		for (Quantity mergingQuantity : mergingQuantities) {
+			merged  = false;
+			for (Quantity mergedQuantity : mergedQuantities) {
+				// 같은 사이즈일 경우
+				if (mergedQuantity.getSize().equals(mergingQuantity.getSize())) {
+					itemDao.updateItemQuantity(mergedQuantity.getQuantityId(), mergedQuantity.getValue()+mergingQuantity.getValue());
+					merged = true;
+				}
+			}
+			// 같은 사이즈가 없을경우 새로운 Quantity 생성
+			if (!merged) {
+				itemDao.createQuantity(new Quantity(0, mergedQuantities.get(0).getItemId(), mergingQuantity.getSize(), mergingQuantity.getValue()));
+			}
+		}
 	}
 
 	public boolean rejectOrder(int itemId) {
@@ -296,14 +321,21 @@ public class ItemService {
 		List<ItemPackage> customerPacks = new ArrayList<ItemPackage>();
 		HashMap<String, Integer> mapper = new HashMap<String, Integer>();
 		String prevCustomerId = "";
+		ItemPackage currItemPack;
 		int i = 0;
 		for (Item item : items) {
 			String currCustomerId = item.getCustomerId();
 			if (!prevCustomerId.equals(currCustomerId)) {
 				customerPacks.add(new ItemPackage(currCustomerId));
-				mapper.put(currCustomerId, i); i++;
+				mapper.put(currCustomerId, i); 
+				i++;
 			}
-			customerPacks.get(mapper.get(currCustomerId)).addItem(item);
+			currItemPack = customerPacks.get(mapper.get(currCustomerId));
+			currItemPack.addItem(item);
+			currItemPack.addPrice(item.getPrice());
+			for (Quantity quantity : item.getQuantities()) {
+				currItemPack.addQuantity(quantity.getValue());
+			}
 			prevCustomerId = currCustomerId;
 		}
 		return customerPacks;
@@ -312,10 +344,14 @@ public class ItemService {
 	public class ItemPackage {
 		private String key;
 		private List<Item> items;
+		private int price;
+		private int quantity;
 
 		public ItemPackage(String key) {
 			this.key = key;
 			this.items = new ArrayList<Item>();
+			this.price = 0;
+			this.quantity = 0;
 		}
 		
 		public String getKey() {
@@ -326,8 +362,24 @@ public class ItemService {
 			return items;
 		}
 		
+		public int getPrice() {
+			return price;
+		}
+		
+		public int getQuantity() {
+			return quantity;
+		}
+		
 		public void addItem(Item item) {
 			items.add(item);
+		}
+		
+		public void addPrice(int price) {
+			this.price += price;
+		}
+		
+		public void addQuantity(int quantity) {
+			this.quantity += quantity;
 		}
 	}
 
@@ -336,10 +388,32 @@ public class ItemService {
 	}
 	
 	public List<Item> readOrderedProductByItemIds(String[] itemIds) {
-		return itemDao.readOrderedProductByItemIds(itemIds);
+		Item currItem;
+		Item newItem;
+		List<Item> returnItems = new ArrayList<Item>();
+		for (String itemId : itemIds) {
+			currItem = itemDao.readItem(Integer.valueOf(itemId));
+			newItem = new Item(currItem.getItemId(), 
+					currItem.getCustomer(), 
+					currItem.getProduct(), 
+					currItem.getItemStatus(), 
+					currItem.getPrice());
+			newItem.setQuantities(itemDao.readOrderedItemQuantityByItemId(Integer.valueOf(itemId)));
+			returnItems.add(newItem);
+		}
+		return returnItems;
 	}
 
 	public Item readItemByQuantityId(int quantityId) {
 		return itemDao.readItemByQuantityId(quantityId);
+	}
+
+	public List<ItemPackage> readAcceptedItems() {
+		List<Item> items = itemDao.readAcceptedItems();
+		for (Item item : items) {
+			item.getProduct().setProductPrice(productService.readByDiscount(item.getProduct().getProductId(), new Customer(item.getCustomerId())).getProductPrice());
+			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
+		}
+		return this.packageByCustomer(items);
 	}
 }

@@ -1,5 +1,6 @@
 package com.ydbaobao.admincontroller;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.support.Message;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.service.BrandService;
 import com.ydbaobao.service.ItemService;
@@ -84,9 +88,34 @@ public class AdminOrderController {
 	 * @return 성공처리여부
 	 */
 	@RequestMapping(value = "/accept", method = RequestMethod.POST)
-	public @ResponseBody String acceptOrder(@RequestParam String itemList, @RequestParam String quantityList) {
-		itemService.acceptOrder(itemList.split(","), quantityList.split(","));
-		return "success";
+	public @ResponseBody String acceptOrder(@RequestParam String itemList) {
+		System.out.println(itemList);
+		Gson gson = new Gson();
+		Type collectionType = new TypeToken<List<Item>>(){}.getType();
+		List<Item> items = gson.fromJson(itemList, collectionType);
+		System.out.println(items);
+		for (Item item : items) {
+			if (!itemService.acceptOrder(item)) {
+				return Message.FAIL;
+			}
+		}
+		return Message.OK;
+	}
+	
+	/**
+	 * 사입된 주문 관리
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value = "/accepted")
+	public String acceptedOrder(Model model) {
+		model.addAttribute("customerPacks", itemService.readAcceptedItems());
+		return "acceptedOrderManager";
+	}
+	
+	@RequestMapping(value = "/shipping", method = RequestMethod.POST)
+	public @ResponseBody String shippingOrder() {
+		return Message.OK;
 	}
 	
 	/**

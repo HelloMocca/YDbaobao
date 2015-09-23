@@ -14,12 +14,15 @@ public class Item {
 	/**
 	 * 카트 		: "I"
 	 * 주문요청 	: "S"
-	 * 사입처리         : "P"
+	 * 사입처리    : "A"
+	 * 배송처리    : "P"
 	 * 취소 		: "C"
 	 * 반려 		: "R"
 	 */
 	public static String CART = "I";
 	public static String ORDERED = "S";
+	public static String ACCEPTED = "A";
+	public static String SHIPMENT = "P";
 	
 	public Item() {
 		
@@ -27,6 +30,11 @@ public class Item {
 	
 	public Item(int itemId) {
 		this(itemId, null, null, "", 0);
+	}
+	
+	public Item(int itemId, List<Quantity> quantities) {
+		this.itemId = itemId;
+		this.quantities = quantities;
 	}
 
 	public Item(int itemId, Customer customer, Product product, String itemStatus, int price) {
@@ -55,6 +63,16 @@ public class Item {
 		this.payment = payment;
 		quantities = new ArrayList<Quantity>();
 		this.quantities.add(quantity);
+	}
+	
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Payment payment, List<Quantity> quantities) {
+		this.itemId = itemId;
+		this.customer = customer;
+		this.product = product;
+		this.itemStatus = itemStatus;
+		this.price = price;
+		this.payment = payment;
+		this.quantities = quantities;
 	}
 
 	public int getItemId() {

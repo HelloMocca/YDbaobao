@@ -104,6 +104,16 @@
 	#info-table td {
 		padding-left:15px;
 	}
+	
+	.quantity-container div span{
+		width:25px;
+		display:inline-block;
+		font-size:15px;
+	}
+	
+	.ordered-quantity {
+		font-weight:bold;
+	}
 </style>
 </head>
 <body>
@@ -123,18 +133,19 @@
 						<tr>
 							<th width="75px">상품번호</th>
 							<th colspan="2" style="width:200px">상품명</th>
-							<th >사이즈</th>
-							<th >수량</th>
+							<th >사이즈 / 수량</th>
 						</tr>
 						<c:forEach var="item" items="${itemList}">
 							<tr data-id="${item.itemId}">
 								<td><span>${item.itemId}</span></td>
-								<td width="50px" class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="" style="width:50px;" src="/image/products/${item.product.productImage}"></a></td>
-								<td width="50px" class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name" style="margin-left:25px;">${item.product.productName}</span></a></td>
-								<td>
+								<td width="50px" class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="" style="width:80px;" src="/image/products/${item.product.productImage}"></a></td>
+								<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name" style="margin-left:25px;">${item.product.productName}</span></a></td>
+								<td class="quantity-container">
 								<c:forEach var="quantity" items="${item.quantities}">
-									<div><span class="item-size">${quantity.size}</span></div>
-									<div><span class="ordered-quantity">${quantity.value}</span></div>
+									<div>
+										<span class="item-size">${quantity.size}</span>
+										<span class="ordered-quantity">${quantity.value}</span>
+									</div>
 								</c:forEach>
 								</td>
 							</tr>

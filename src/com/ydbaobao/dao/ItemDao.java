@@ -109,13 +109,13 @@ public class ItemDao extends JdbcDaoSupport {
 	}
 	
 	public Item readItem(int itemId) {
-		String sql = "select * from ITEMS A, PRODUCTS B where A.itemId=? AND A.productId = B.productId";
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.productId = B.productId AND B.brandId = C.brandId AND A.itemId = ?";
 		RowMapper<Item> rm = new RowMapper<Item>() {
 			@Override
 			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
 				return new Item(
 						rs.getInt("itemId"), new Customer(rs.getString("customerId")),
-						new Product(rs.getInt("productId"),rs.getString("productName"), rs.getInt("productPrice"), rs.getString("productImage"), rs.getString("productSize"), rs.getInt("isSoldout"), new Brand(rs.getInt("brandId"))),
+						new Product(rs.getInt("productId"),rs.getString("productName"), rs.getInt("productPrice"), rs.getString("productImage"), rs.getString("productSize"), rs.getInt("isSoldout"), new Brand(rs.getInt("brandId"), rs.getString("brandName"))),
 						rs.getString("itemStatus"), rs.getInt("price"));
 			}
 		};
@@ -339,6 +339,21 @@ public class ItemDao extends JdbcDaoSupport {
 			return null;
 		}
 	}
+	
+	public List<Quantity> readOrderedItemQuantityByItemId(int itemId) {
+		String sql = "select *, sum(A.value) as value from QUANTITY A, ITEMS B, PRODUCTS C, BRANDS D where B.itemStatus = 'S' AND B.productId = C.productId AND C.brandId = D.brandId AND A.itemId=? group by B.productId, A.size";
+		RowMapper<Quantity> rm = new RowMapper<Quantity>() {
+			@Override
+			public Quantity mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Quantity(rs.getInt("quantityId"), rs.getInt("itemId"), rs.getString("size"), rs.getInt("value"));
+			}
+		};
+		try {
+			return getJdbcTemplate().query(sql, rm, itemId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
+	}
 
 	public Item readItemByCustomerIdAndProductIdAndItemStatus(String customerId, int productId, String itemStatus) {
 		String sql = "select * from ITEMS where customerId = ? and productId = ? and itemStatus = ?";
@@ -502,5 +517,32 @@ public class ItemDao extends JdbcDaoSupport {
 			return (readQuantityByItemId(quantity.getItemId()) == null) ? deleteItem(quantity.getItemId()) : true;
 		}
 		return false;
+	}
+
+	public boolean updateQuantity(Quantity quantity) {
+		String sql = "update QUANTITY set (itemId = ?, size = ?, value = ?) where quantityId = ?";
+		return (getJdbcTemplate().update(sql, quantity.getItemId(), quantity.getSize(), quantity.getValue(), quantity.getQuantityId()) == 1) ? true : false;
+	}
+
+	public List<Item> readAcceptedItems() {
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.productId = B.productId AND B.brandId = C.brandId AND A.itemStatus = '"+Item.ACCEPTED+"' order by A.customerId";
+		RowMapper<Item> rm = new RowMapper<Item>() {
+			@Override
+			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Item(
+						rs.getInt("itemId"),
+						new Customer(rs.getString("customerId")),
+						new Product(rs.getInt("productId"),rs.getString("productName"), 
+								rs.getInt("productPrice"), rs.getString("productImage"), 
+								rs.getString("productSize"), rs.getInt("isSoldout"), 
+						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
+						rs.getInt("price"), null);
+			}
+		};
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 }
