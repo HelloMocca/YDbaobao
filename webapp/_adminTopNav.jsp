@@ -6,7 +6,7 @@
 	<div id="top-bar" class="wrap content" style="height: 35px;">
 		<ul id="top">
 			<li class="logo"><a href="/"><img src="/image/logo_5.png"/></a></li>
-			<li class="logout"><a href="/admin/adminLogout"><span style="color: #EA6576;">[관리자 로그아웃]</span></a></li>
+			<li class="logout"><a href="/admin/adminLogout"><span style="color: #EA6576;">[ADMIN LOGOUT]</span></a></li>
 		</ul>
 	</div>
 </div>

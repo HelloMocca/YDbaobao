@@ -9,12 +9,21 @@
 <link rel="stylesheet" href="/css/admin.css">
 <link rel="stylesheet" href="/css/font-awesome.min.css">
 <style>
-
 	#list-header {
 		width:100%;
-		outline:1px solid black;
+		background-color:#454545;
+		color:white;
 	}
-	#list-header div, .list-header span {
+	
+	#list-footer {
+		margin-top: 5px;
+		width: 100%;
+		background-color: #f1f1f1;
+		border: 1px solid #ccc;
+		font-weight:700;
+	}
+	
+	#list-header div, .list-header span, #list-footer div {
 		width:23%;
 		height:30px;
 		line-height:30px;
@@ -25,7 +34,12 @@
 	.table-container {
 		padding:10px;
 		margin-top:3px;
-		background: #f8f8f8;
+		background:#f2f2f2;
+		border:1px solid #ccc;
+	}
+	
+	.table-container:nth-child(odd) {
+		background: #f2f2f2;
 	}
 	
 	table {
@@ -34,11 +48,18 @@
 		border:1px solid #ccc;
 		border-spacing:0;
 		margin:15px 0;
+		background:#fff
 	}
 	table th{
 		padding:5px;
 	}
 	tbody td{
+		padding:10px 0;
+	}
+	table tfoot {
+		background:#f8f8f8;
+	}
+	table tfoot tr td{
 		padding:10px 0;
 	}
 	.item-name-container {
@@ -99,6 +120,8 @@
 	.quantity-container .quantity {
 		font-weight:bold;
 	}
+	
+	
 </style>
 </head>
 <body>
@@ -111,16 +134,16 @@
 			<h1>배송대기 주문 관리</h1>
 			<div id="list-header">
 				<div>주문자</div>
-				<div>주문수량</div>
-				<div>주문금액</div>
+				<div>수량</div>
+				<div>금액</div>
 				<div>상세내역 </div>
 			</div>
 			<c:forEach var="customerPack" items="${customerPacks}">
 			<div class="table-container">
 					<div class="list-header">
 						<span>${customerPack.key}</span>
-						<span>${customerPack.quantity}</span>
-						<span>${customerPack.price}</span>
+						<span class="total-order-quantities">${customerPack.quantity}</span>
+						<span class="total-order-prices">${customerPack.price}</span>
 						<span><button class="tableOpenBtn">상세내역</button></span>
 					</div>
 					<table id="table_${customerPack.key}" style="text-align: center; padding-top:0px; display:none;">
@@ -154,27 +177,66 @@
 							</tr>
 						</c:forEach>
 					</tbody>
-					<tfoot>
+					<tfoot style="padding:5px 0">
 						<tr>
 							<td colspan="2">
 								<span>중량</span>
-								<input type="number" style="width:50px;"/><span>Kg</span>
+								<input type="number" style="width:50px;" value="0"/><span>Kg</span>
+							</td>
+							<td>
+								<span>배송비</span>
+								<input type="number" style="width:50px;" value="0"/><span>원</span>
+							</td>
+							<td>
+								<span>DC</span>
+								<input type="number" style="width:50px;" value="0"/><span>원</span>
+							</td>
+							<td colspan="2">
+								<span>청구액</span>
+								<span style="font-weight:bold; font-size:15px;">${customerPack.price}</span><span>원</span>
+							</td>
+							<td>
+								<button class="btn"><i class="fa fa-truck"></i>  배송처리</button>
 							</td>
 						</tr>
 					</tfoot>
 				</table>
 			</div>
 			</c:forEach>	
-			<div>
-				<div> 대기수량 : <span>0</span>
+			<div id="list-footer">
+				<div> 대기주문 : <span id="wait-orders">0</span>
 				</div>
-				<div> 금액 : <span>0</span>
+				<div> 대기수량 : <span id="wait-quantities">0</span>
+				</div>
+				<div style="width:46%"> 총 주문금액 : <span id="wait-price">0</span>
 				</div>
 			</div>
 		</div>
 	</div>
 	<script>
 		window.addEventListener('load',function() {
+			var val;
+			var orders = document.querySelectorAll(".table-container");
+			document.querySelector("#wait-orders").innerHTML=orders.length;
+			
+			var totalQuantityContainer = document.querySelectorAll(".total-order-quantities");
+			var totalQuantity = 0;
+			for (var i = 0; i < totalQuantityContainer.length; i++) {
+				totalQuantity += totalQuantityContainer[i].textContent * 1;
+			}
+			document.querySelector("#wait-quantities").innerHTML=totalQuantity;
+			
+			var totalPrices = document.querySelectorAll(".total-order-prices");
+			var totalPrice = 0;
+			for (var i = 0; i < totalPrices.length; i++) {
+				val = totalPrices[i].textContent*1;
+				totalPrice += val;
+				totalPrices[i].textContent = val.toLocaleString().split(".")[0];
+			}
+			document.querySelector("#wait-price").innerHTML=totalPrice.toLocaleString().split(".")[0];
+			
+			
+			
 			var tableOpenBtn = document.querySelectorAll(".tableOpenBtn");
 			for (var i = 0; i < tableOpenBtn.length; i++) {
 				tableOpenBtn[i].addEventListener("click",function(e) {

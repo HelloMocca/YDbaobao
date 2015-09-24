@@ -31,7 +31,8 @@ public class AdminConfigDao extends JdbcDaoSupport {
 			public AdminConfig mapRow(ResultSet rs, int rowNum) throws SQLException {
 				return new AdminConfig(rs.getInt("adminConfigId"),
 						rs.getInt("adminDisplayProducts"),
-						rs.getString("adminPassword"));
+						rs.getString("adminPassword"),
+						rs.getInt("adminCostPerWeight"));
 			}
 		};
 		return getJdbcTemplate().queryForObject(sql, rm);

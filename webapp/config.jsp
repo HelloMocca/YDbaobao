@@ -4,11 +4,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>관리자페이지::설정</title>
+<title>관리자페이지::쇼핑몰 설정</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <link rel="stylesheet" href="/css/admin.css">
 <link rel="stylesheet" href="/css/font-awesome.min.css">
+<style>
+	table#adminconfig-table tr:nth-child(odd){
+		background:#f2f2f2;
+	}
+</style>
 </head>
 <body>
 	<div id="header" style="width: 100%;">
@@ -17,7 +22,7 @@
 	<div id="container">
 		<%@ include file="./_adminNav.jsp"%>
 		<div id="content">
-			<h1>관리자 설정</h1>
+			<h1>쇼핑몰 설정</h1>
 			<c:if test="${ not empty message}">
 				<div class="message">${message}</div>
 			</c:if>
@@ -25,7 +30,7 @@
 				modelAttribute="adminConfig">
 				<form:input path="adminConfigId" type="hidden"
 					value="${adminConfig.adminConfigId}" />
-				<table>
+				<table id="adminconfig-table">
 					<tbody>
 						<tr>
 							<th>구분</th>
@@ -33,41 +38,22 @@
 						</tr>
 						<tr>
 							<td><form:label path="adminDisplayProducts">페이지 당 상품 갯수</form:label></td>
-							<td><form:input path="adminDisplayProducts" type="number" min="1" value="${adminConfig.adminDisplayProducts}" /></td>
+							<td><form:input path="adminDisplayProducts" type="number" min="1" value="${adminConfig.adminDisplayProducts}" />개</td>
 						</tr>
 						<tr>
 							<td><form:label path="adminPassword">관리자 비밀번호 수정</form:label></td>
 							<td><form:password path="adminPassword" maxlength="20"></form:password></td>
 						</tr>
+						<tr>
+							<td><form:label path="adminCostPerWeight">무게(Kg)당 배송비</form:label></td>
+							<td><form:input path="adminCostPerWeight" type="number" value="${adminConfig.adminCostPerWeight}"></form:input>원</td>
+						</tr>
 					</tbody>
-					<input type="submit" value="저장" />
+					<button class="btn btn-sm" type="submit">저장</button>
 				</table>
 			</form:form>
 		</div>
 	</div>
-	<script>
-	
-	/* 주석처리 한 사람 : jyb
-	 * id="config" 를 가진 element가 존재하지 않음
-	 * 회원 등급 변경 기능이 없음
-	 */
-	// window.addEventListener('load', function() {
-		
-	// 	document.body.querySelector('#config').addEventListener('', function(e) {
-			
-	// 		ydbaobao.ajax({
-	// 			method:'put',
-	// 			url:'/admin/config/',
-	// 			success: function(req){
-	// 				if(req.responseText === 'success') {
-	// 					alert('회원 등급이 변경되었습니다');
-	// 				}
-	// 			}
-	// 		});			
-	// 	}, false);
-	// }, false);
-	
-	</script>
 	<script src="/js/ydbaobao.js"></script>
 </body>
 <style>

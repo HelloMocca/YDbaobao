@@ -4,13 +4,15 @@ public class AdminConfig {
 	private int adminConfigId;
 	private int adminDisplayProducts;
 	private String adminPassword;
+	private int adminCostPerWeight;
 	
 	public AdminConfig(){};
 	
-	public AdminConfig(int adminConfigId, int adminDisplayProducts, String adminPassword) {
+	public AdminConfig(int adminConfigId, int adminDisplayProducts, String adminPassword, int adminCostPerWeight) {
 		this.adminConfigId = adminConfigId;
 		this.adminDisplayProducts = adminDisplayProducts;
 		this.adminPassword = adminPassword;
+		this.adminCostPerWeight = adminCostPerWeight;
 	}
 
 	public int getAdminConfigId() {
@@ -36,43 +38,19 @@ public class AdminConfig {
 	public void setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + adminConfigId;
-		result = prime * result + adminDisplayProducts;
-		result = prime * result
-				+ ((adminPassword == null) ? 0 : adminPassword.hashCode());
-		return result;
+	
+	public int getAdminCostPerWeight() {
+		return adminCostPerWeight;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AdminConfig other = (AdminConfig) obj;
-		if (adminConfigId != other.adminConfigId)
-			return false;
-		if (adminDisplayProducts != other.adminDisplayProducts)
-			return false;
-		if (adminPassword == null) {
-			if (other.adminPassword != null)
-				return false;
-		} else if (!adminPassword.equals(other.adminPassword))
-			return false;
-		return true;
+	public void setAdminCostPerWeight(int adminCostPerWeight) {
+		this.adminCostPerWeight = adminCostPerWeight;
 	}
 
 	@Override
 	public String toString() {
-		return "AdminConfig [adminConfigId=" + adminConfigId
-				+ ", adminDisplayProducts=" + adminDisplayProducts
-				+ ", adminPassword=" + adminPassword + "]";
+		return "AdminConfig [adminConfigId=" + adminConfigId + ", adminDisplayProducts=" + adminDisplayProducts
+				+ ", adminPassword=" + adminPassword + ", adminCostPerWeight=" + adminCostPerWeight + "]";
 	}
+
 }
