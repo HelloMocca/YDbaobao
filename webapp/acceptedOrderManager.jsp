@@ -69,7 +69,7 @@
 		width:50px;
 		height:50px;
 	}
-	.order-price {
+	.item-price {
 		font-weight:800;
 	}
 
@@ -136,7 +136,7 @@
 				<div>주문자</div>
 				<div>수량</div>
 				<div>금액</div>
-				<div>상세내역 </div>
+				<div> &nbsp </div>
 			</div>
 			<c:forEach var="customerPack" items="${customerPacks}">
 			<div class="table-container">
@@ -170,7 +170,7 @@
 									</div>
 									</c:forEach>
 								</td>
-								<td><span class="order-price">${item.price}</span></td>
+								<td><span class="item-price">${item.price}</span></td>
 								<td>
 									<input type="button" class="reject" value="사입취소">
 								</td>
@@ -178,22 +178,23 @@
 						</c:forEach>
 					</tbody>
 					<tfoot style="padding:5px 0">
-						<tr>
+						<tr class="extra-cost">
 							<td colspan="2">
 								<span>중량</span>
-								<input type="number" style="width:50px;" value="0"/><span>Kg</span>
+								<input class="order-weight" type="number" style="width:50px;" value="0"/><span>Kg</span>
 							</td>
 							<td>
 								<span>배송비</span>
-								<input type="number" style="width:50px;" value="0"/><span>원</span>
+								<input class="ship-cost" type="number" style="width:50px;" value="0"/><span>원</span>
 							</td>
 							<td>
-								<span>DC</span>
-								<input type="number" style="width:50px;" value="0"/><span>원</span>
+								<span>추가DC</span>
+								<input class="extra-dc" type="number" style="width:50px;" value="0"/><span>원</span>
 							</td>
 							<td colspan="2">
 								<span>청구액</span>
-								<span style="font-weight:bold; font-size:15px;">${customerPack.price}</span><span>원</span>
+								<input class="origin-price" type="hidden" value=${customerPack.price} />
+								<span class="order-price" style="font-weight:bold; font-size:15px;">${customerPack.price}</span><span>원</span>
 							</td>
 							<td>
 								<button class="btn"><i class="fa fa-truck"></i>  배송처리</button>
@@ -214,7 +215,25 @@
 		</div>
 	</div>
 	<script>
+		var costPerWeight = ${costPerWeight};
 		window.addEventListener('load',function() {
+			refreshWaitValues();
+			var weightInputs = document.querySelectorAll(".order-weight");
+			for (var i = 0; i < weightInputs.length; i++) {
+				weightInputs[i].addEventListener("keyup", InputOrderWeight, false);
+			}
+			var shippingCostInputs = document.querySelectorAll(".ship-cost");
+			for (var i = 0; i < shippingCostInputs.length; i++) {
+				shippingCostInputs[i].addEventListener("keyup", InputOrderShippingCost, false);
+			}
+			var extraDCInputs = document.querySelectorAll(".extra-dc");
+			for (var i = 0; i < extraDCInputs.length; i++) {
+				extraDCInputs[i].addEventListener("keyup", InputExtraDC, false);
+			}
+			
+		}, false);
+		
+		function refreshWaitValues() {
 			var val;
 			var orders = document.querySelectorAll(".table-container");
 			document.querySelector("#wait-orders").innerHTML=orders.length;
@@ -235,8 +254,6 @@
 			}
 			document.querySelector("#wait-price").innerHTML=totalPrice.toLocaleString().split(".")[0];
 			
-			
-			
 			var tableOpenBtn = document.querySelectorAll(".tableOpenBtn");
 			for (var i = 0; i < tableOpenBtn.length; i++) {
 				tableOpenBtn[i].addEventListener("click",function(e) {
@@ -248,7 +265,32 @@
 					}
 				},false);
 			}
-		}, false);
+		}
+
+		function InputOrderWeight(e) {
+			var input = e.target.value;
+			var newCost = input * costPerWeight;
+			var shipCostInput = e.target.parentNode.parentNode.querySelector(".ship-cost");
+			shipCostInput.value = newCost;
+			calcOrderPrice(e.target.parentNodeSelector(".extra-cost"));
+		}
+		
+		function InputOrderShippingCost(e) {
+			calcOrderPrice(e.target.parentNodeSelector(".extra-cost"));
+		}
+		
+		function InputExtraDC(e) {
+			calcOrderPrice(e.target.parentNodeSelector(".extra-cost"));
+		}
+		
+		function calcOrderPrice(rootElement) {
+			var shipCost = rootElement.querySelector(".ship-cost").value*1;
+			var extraDC = rootElement.querySelector(".extra-dc").value*1;
+			var originPrice = rootElement.querySelector(".origin-price").value*1;
+			
+			rootElement.querySelector(".order-price").textContent = originPrice + shipCost - extraDC;
+		}
+		
 	</script>
 	<script src="/js/ydbaobao.js"></script>
 </body>

@@ -42,5 +42,4 @@ public class AdminConfigDao extends JdbcDaoSupport {
 		String sql = "update ADMINCONFIG set adminDisplayProducts = ?, adminPassword = ?";
 		getJdbcTemplate().update(sql, adminConfig.getAdminDisplayProducts(), adminConfig.getAdminPassword());
 	}
-
 }

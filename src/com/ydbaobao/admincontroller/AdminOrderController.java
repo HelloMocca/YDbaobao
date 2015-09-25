@@ -21,6 +21,7 @@ import com.support.Message;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.service.BrandService;
 import com.ydbaobao.service.ItemService;
+import com.ydbaobao.service.AdminConfigService;
 
 @Controller
 @RequestMapping("/admin/orders")
@@ -33,6 +34,9 @@ public class AdminOrderController {
 	
 	@Resource
 	private BrandService brandService;
+	
+	@Resource
+	private AdminConfigService adminConfigService;
 
 	/**
 	 * 주문된 브랜드의 리스트 출력 페이지 요청
@@ -110,6 +114,7 @@ public class AdminOrderController {
 	@RequestMapping(value = "/accepted")
 	public String acceptedOrder(Model model) {
 		model.addAttribute("customerPacks", itemService.readAcceptedItems());
+		model.addAttribute("costPerWeight", adminConfigService.readCostPerWeight());
 		return "acceptedOrderManager";
 	}
 	

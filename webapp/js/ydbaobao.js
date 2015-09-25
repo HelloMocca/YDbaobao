@@ -96,6 +96,19 @@ Element.prototype.hide = function() {
 	this.style.display = "none";
 };
 
+Element.prototype.parentNodeSelector = function(cssquery) {
+	var type = (cssquery[0] === "#") ? "id" : "className";
+	var name = cssquery.split(cssquery[0])[1];
+	var pNode = this.parentNode;
+	while (pNode != null) {
+		if (pNode[type] === name) {
+			return pNode;
+		}
+		pNode = pNode.parentNode;
+	}
+	return null;
+}
+
 function isNumberKey(evt) {
     var charCode = (evt.which) ? evt.which : event.keyCode
     return !(charCode > 31 && (charCode < 48 || charCode > 57));

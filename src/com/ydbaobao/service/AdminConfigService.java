@@ -23,4 +23,9 @@ public class AdminConfigService {
 		adminConfigDao.update(adminConfig);
 		return adminConfigDao.read();
 	}
+
+	public int readCostPerWeight() {
+		AdminConfig config = adminConfigDao.read();
+		return config.getAdminCostPerWeight();
+	}
 }
