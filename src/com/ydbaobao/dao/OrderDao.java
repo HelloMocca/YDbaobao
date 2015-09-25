@@ -19,15 +19,17 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.support.CommonUtil;
 import com.ydbaobao.model.Brand;
 import com.ydbaobao.model.Customer;
 import com.ydbaobao.model.Item;
+import com.ydbaobao.model.Order;
 import com.ydbaobao.model.Payment;
 import com.ydbaobao.model.Product;
 import com.ydbaobao.model.Quantity;
 
 @Repository
-public class ItemDao extends JdbcDaoSupport {
+public class OrderDao extends JdbcDaoSupport {
 	@Resource
 	private DataSource dataSource;
 
@@ -399,7 +401,7 @@ public class ItemDao extends JdbcDaoSupport {
 	 * Item의 상태를 변환
 	 * 카트 		: "I"
 	 * 주문요청 	: "S"
-	 * 사입처리   : "P"
+	 * 사입처리         : "P"
 	 * 취소 		: "C"
 	 * 반려 		: "R"
 	 * @param itemId
@@ -537,6 +539,45 @@ public class ItemDao extends JdbcDaoSupport {
 								rs.getString("productSize"), rs.getInt("isSoldout"), 
 						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
 						rs.getInt("price"), null);
+			}
+		};
+		try {
+			return getJdbcTemplate().query(sql, rm);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
+	}
+
+	public int createOrder(final Order order) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		final String sql = "insert into ORDERS (shippingCost, extraDiscount, orderPrice, paiedPrice, orderDate) values(?, ?, ?, ?, ?)";
+		getJdbcTemplate().update(new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+				ps.setInt(1, order.getShippingCost());
+				ps.setInt(2, order.getExtraDiscount());
+				ps.setInt(3, order.getOrderPrice());
+				ps.setInt(3, order.getPaiedPrice());
+				ps.setString(4, CommonUtil.getDatetime());
+				return ps;
+			}
+		}, keyHolder);
+		return keyHolder.getKey().intValue();
+	}
+	
+	public List<Order> readOrders() {
+		String sql = "select * from ORDERS";
+		RowMapper<Order> rm = new RowMapper<Order>() {
+			@Override
+			public Order mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Order(
+						rs.getInt("orderId"),
+						rs.getInt("shippingCost"),
+						rs.getInt("extraDiscount"),
+						rs.getInt("orderPrice"),
+						rs.getInt("paiedPrice"),
+						rs.getInt("recallPrice"),
+						rs.getString("orderDate"));
 			}
 		};
 		try {
