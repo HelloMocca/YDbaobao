@@ -102,7 +102,7 @@ public class AdminOrderController {
 		List<Item> items = new Gson().fromJson(itemList, collectionType);
 		System.out.println(items);
 		for (Item item : items) {
-			if (!itemService.acceptOrder(item)) {
+			if (!itemService.acceptOrder(item, Item.ACCEPTED)) {
 				return Message.FAIL;
 			}
 		}
@@ -119,6 +119,12 @@ public class AdminOrderController {
 		model.addAttribute("customerPacks", itemService.readAcceptedItems());
 		model.addAttribute("costPerWeight", adminConfigService.readCostPerWeight());
 		return "acceptedOrderManager";
+	}
+	
+	@RequestMapping(value = "/cancelaccept/{itemId}")
+	public @ResponseBody String cancelAccept(@PathVariable int itemId) {
+		Item item = itemService.readItemByItemId(itemId);
+		return (itemService.acceptOrder(item, Item.ORDERED)) ? Message.OK : Message.FAIL;
 	}
 	
 	/**

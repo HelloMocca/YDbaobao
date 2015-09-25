@@ -191,6 +191,10 @@
 		function checkOrders(e) {
 			var checkList = document.querySelectorAll('.item-check');
 			var checkLength = checkList.length;
+			if (checkLength <= 0) {
+				alert("선택된 주문이 없습니다.");
+				return;
+			}
 			var json = '[';
 			var currItemId;
 			for(var i = 0; i < checkLength; i++) {

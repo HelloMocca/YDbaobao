@@ -157,7 +157,7 @@
 							<th> </th>
 						</tr>
 						<c:forEach var="item" items="${customerPack.items}">
-							<tr data-id="${item.itemId}">
+							<tr class="item-container" data-id="${item.itemId}">
 								<td><span class="item-customer">${item.product.brand.brandName}</span></td>
 								<td class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="item-image" src="/image/products/${item.product.productImage}"></a></td>
 								<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name">${item.product.productName}</span></a></td>
@@ -197,7 +197,7 @@
 								<span class="order-price" style="font-weight:bold; font-size:15px;">${customerPack.price}</span><span>원</span>
 							</td>
 							<td>
-								<button class="btn"><i class="fa fa-truck"></i>  배송처리</button>
+								<button class="btn shipping-order"><i class="fa fa-truck"></i>  배송처리</button>
 							</td>
 						</tr>
 					</tfoot>
@@ -229,6 +229,14 @@
 			var extraDCInputs = document.querySelectorAll(".extra-dc");
 			for (var i = 0; i < extraDCInputs.length; i++) {
 				extraDCInputs[i].addEventListener("keyup", InputExtraDC, false);
+			}
+			var shippingOrderBtns = document.querySelectorAll(".shipping-order");
+			for (var i = 0; i < shippingOrderBtns.length; i++) {
+				shippingOrderBtns[i].addEventListener("click", shippingOrder, false);
+			}
+			var rejectBtns = document.querySelectorAll(".reject");
+			for (var i = 0; i < rejectBtns.length; i++) {
+				rejectBtns[i].addEventListener("click", rejectItem, false);
 			}
 			
 		}, false);
@@ -289,6 +297,30 @@
 			var originPrice = rootElement.querySelector(".origin-price").value*1;
 			
 			rootElement.querySelector(".order-price").textContent = originPrice + shipCost - extraDC;
+		}
+		
+		function shippingOrder(e) {
+			var tableContainer = e.target.parentNodeSelector(".table-container");
+			var itemContainers = tableContainer.querySelectorAll(".item-container");
+			for (var i = 0; i < itemContainers.length; i++) {
+				console.log(itemContainers[i].getAttribute("data-id"));
+			}
+		}
+		
+		function rejectItem(e) {
+			alert("해당상품의 사입을 취소합니다.");
+			var itemId = e.target.parentNodeSelector(".item-container").getAttribute("data-id");
+			ydbaobao.ajax({
+				method: "post",
+				url: "/admin/orders/cancelaccept/"+itemId,
+				success: function(req){
+					if (req.responseText == "OK") {
+						alert("사입이 취소되었습니다.");
+					} else {
+						alert("사입 취소를 실패했습니다.")
+					}
+				}
+			});
 		}
 		
 	</script>

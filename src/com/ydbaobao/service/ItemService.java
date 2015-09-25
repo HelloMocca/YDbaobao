@@ -205,10 +205,10 @@ public class ItemService {
 		return true;
 	}
 
-	public boolean acceptOrder(Item item) {
+	public boolean acceptOrder(Item item, String itemStatus) {
 		Item originItem = itemDao.readItem(item.getItemId());
 		int updatedItemId = item.getItemId();
-		Item sameConditionItem = itemDao.readItemByCustomerIdAndProductIdAndItemStatus(originItem.getCustomerId(), originItem.getProduct().getProductId(), Item.ACCEPTED);
+		Item sameConditionItem = itemDao.readItemByCustomerIdAndProductIdAndItemStatus(originItem.getCustomerId(), originItem.getProduct().getProductId(), itemStatus);
 		originItem.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 		List<Quantity> originQuantities = originItem.getQuantities();
 		List<Quantity> acceptQuantities = item.getQuantities();
@@ -221,7 +221,7 @@ public class ItemService {
 				itemDao.deleteItem(originItem.getItemId());
 			} else {
 				//없을경우 기존것을 변경
-				itemDao.updateItemStatus(item.getItemId(), Item.ACCEPTED);
+				itemDao.updateItemStatus(item.getItemId(), itemStatus);
 			}
 		} else {
 			//수량 전부를 사입하지 않을경우 acceptPartOfQuantity()
@@ -239,10 +239,11 @@ public class ItemService {
 				updatedItemId = sameConditionItem.getItemId();
 			}
 			//동일 상품이 없을경우 Item과 Quantity를 새로 만듬
-			int itemId = itemDao.createItem(originItem.getCustomerId(), originItem.getProduct().getProductId(), Item.ACCEPTED);
+			int itemId = itemDao.createItem(originItem.getCustomerId(), originItem.getProduct().getProductId(), itemStatus);
 			for (Quantity acceptQuantity : acceptQuantities) {
 				itemDao.createQuantity(new Quantity(0, itemId, acceptQuantity.getSize(), acceptQuantity.getValue()));
 			}
+			updatedItemId = itemId;
 		}
 		updateItemPriceByItemId(updatedItemId);
 		return true;
@@ -415,5 +416,12 @@ public class ItemService {
 			item.setQuantities(itemDao.readQuantityByItemId(item.getItemId()));
 		}
 		return this.packageByCustomer(items);
+	}
+
+	public boolean acceptOrderCancel(int itemId) {
+		
+		
+		
+		return true;
 	}
 }
