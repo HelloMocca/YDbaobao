@@ -19,9 +19,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.support.Message;
 import com.ydbaobao.model.Item;
+import com.ydbaobao.model.Order;
 import com.ydbaobao.service.BrandService;
 import com.ydbaobao.service.ItemService;
 import com.ydbaobao.service.AdminConfigService;
+import com.ydbaobao.service.OrderService;
 
 @Controller
 @RequestMapping("/admin/orders")
@@ -37,6 +39,9 @@ public class AdminOrderController {
 	
 	@Resource
 	private AdminConfigService adminConfigService;
+	
+	@Resource
+	private OrderService orderService;
 
 	/**
 	 * 주문된 브랜드의 리스트 출력 페이지 요청
@@ -93,10 +98,8 @@ public class AdminOrderController {
 	 */
 	@RequestMapping(value = "/accept", method = RequestMethod.POST)
 	public @ResponseBody String acceptOrder(@RequestParam String itemList) {
-		System.out.println(itemList);
-		Gson gson = new Gson();
 		Type collectionType = new TypeToken<List<Item>>(){}.getType();
-		List<Item> items = gson.fromJson(itemList, collectionType);
+		List<Item> items = new Gson().fromJson(itemList, collectionType);
 		System.out.println(items);
 		for (Item item : items) {
 			if (!itemService.acceptOrder(item)) {
@@ -118,9 +121,23 @@ public class AdminOrderController {
 		return "acceptedOrderManager";
 	}
 	
+	/**
+	 * 주문 배송처리
+	 * @return
+	 */
 	@RequestMapping(value = "/shipping", method = RequestMethod.POST)
-	public @ResponseBody String shippingOrder() {
-		return Message.OK;
+	public @ResponseBody String shippingOrder(@RequestParam String order) {
+		Type collectionType = new TypeToken<Order>(){}.getType();
+		Order newOrder = new Gson().fromJson(order, collectionType);
+		return (orderService.createOrder(newOrder)) ? Message.OK : Message.FAIL;
+	}
+	
+	/**
+	 * 배송처리된 주문관리
+	 */
+	public String shippedOrder(Model model) {
+		//model.addAttribute("items", itemService.readShippedItemsByDate());
+		return "shippedOrderManager";
 	}
 	
 	/**
