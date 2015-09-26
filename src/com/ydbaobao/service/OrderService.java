@@ -24,17 +24,25 @@ public class OrderService {
 	@Resource
 	private ItemDao itemDao;
 	
-	public boolean createOrder(Order order) {
+	public int createOrder(Order order) {
 		int orderId = orderDao.createOrder(order);
 		List<Item> items = order.getItems();
+		if (items == null) return orderId;
 		for (Item item : items) {
-			if (!itemDao.updateItemToShipmentStatus(item.getItemId(), orderId)) return false;
+			if (!itemDao.updateItemToShipmentStatus(item.getItemId(), orderId)) return -1;
 		}
-		return true;
+		return orderId;
 	}
 
 	public List<Order> readOrdersByDate(String date) {
-		
-		return null;
+		return orderDao.readOrdersByDate(date);
+	}
+
+	public int deleteOrder(int orderId) {
+		return orderDao.deleteOrderByOrderId(orderId);
+	}
+
+	public List<Order> readOrdersByCustomerId(String customerId) {
+		return orderDao.readOrdersByCustomerId(customerId);
 	}
 }

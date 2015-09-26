@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.support.CommonUtil;
 import com.support.Message;
 import com.ydbaobao.model.Item;
 import com.ydbaobao.model.Order;
@@ -140,19 +141,39 @@ public class AdminOrderController {
 	public @ResponseBody String shippingOrder(@RequestParam String order) {
 		Type collectionType = new TypeToken<Order>(){}.getType();
 		Order newOrder = new Gson().fromJson(order, collectionType);
-		System.out.println(newOrder);
-		return (orderService.createOrder(newOrder)) ? Message.OK : Message.FAIL;
+		return (orderService.createOrder(newOrder) < 0) ? Message.OK : Message.FAIL;
 	}
 	
 	/**
-	 * 배송처리된 주문관리
+	 * 배송처리된 주문관리(특정날짜기준)
 	 * @param date format(yyyy-dd-mm)
-	 * @return shippedOrderManager Page
+	 * @return shipmentManager Page
 	 */
-	@RequestMapping(value="/shipped/{date}", method = RequestMethod.GET)
-	public String shippedOrder(@PathVariable String date, Model model) {
-		model.addAttribute("items", orderService.readOrdersByDate(date));
-		return "shippedOrderManager";
+	@RequestMapping(value= "/shipped/read/{date}", method = RequestMethod.GET)
+	public String shippedOrderByDate(@PathVariable String date, Model model) {
+		model.addAttribute("date", date);
+		model.addAttribute("orders", orderService.readOrdersByDate(date));
+		return "shipmentManager";
+	}
+	
+	/**
+	 * 배송처리된 주문관리(오늘기준)
+	 * @param model
+	 * @return shipmentManager Page
+	 */
+	@RequestMapping(value = "/shipped", method = RequestMethod.GET)
+	public String shippedOrder(Model model) {
+		String date = CommonUtil.getDate();
+		model.addAttribute("date", date);
+		model.addAttribute("orders", orderService.readOrdersByDate(date));
+		return "shipmentManager";
+	}
+	
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String shippedOrderByCustomer(@PathVariable String customerId, Model model) {
+		model.addAttribute("customerId", customerId);
+		model.addAttribute("orders", orderService.readOrdersByCustomerId(customerId));
+		return "shipmentManagerByCustomer";
 	}
 	
 	/**

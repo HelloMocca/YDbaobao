@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Order {
 	private int orderId;
+	private String customerId;
 	private List<Item> items;
 	private int shippingCost;
 	private int extraDiscount;
@@ -12,14 +13,15 @@ public class Order {
 	private int recallPrice;
 	private String orderDate;
 	
-	public Order(int shippingCost, int extraDiscount, int orderPrice, int paiedPrice, int recallPrice,
+	public Order(String customerId, int shippingCost, int extraDiscount, int orderPrice, int paiedPrice, int recallPrice,
 			String orderDate) {
-		this(0, shippingCost, extraDiscount, orderPrice, paiedPrice, recallPrice, orderDate);
+		this(0, customerId, shippingCost, extraDiscount, orderPrice, paiedPrice, recallPrice, orderDate);
 	}
 	
-	public Order(int orderId, int shippingCost, int extraDiscount, int orderPrice, int paiedPrice, int recallPrice,
+	public Order(int orderId, String customerId, int shippingCost, int extraDiscount, int orderPrice, int paiedPrice, int recallPrice,
 			String orderDate) {
 		this.orderId = orderId;
+		this.customerId = customerId;
 		this.shippingCost = shippingCost;
 		this.extraDiscount = extraDiscount;
 		this.orderPrice = orderPrice;
@@ -33,6 +35,12 @@ public class Order {
 	}
 	public void setOrderId(int orderId) {
 		this.orderId = orderId;
+	}
+	public String getCustomerId() {
+		return customerId;
+	}
+	public void setCustomerId(String customerId) {
+		this.customerId = customerId;
 	}
 	public List<Item> getItems() {
 		return items;
@@ -76,14 +84,15 @@ public class Order {
 	public void setOrderDate(String orderDate) {
 		this.orderDate = orderDate;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + Integer.valueOf(customerId);
 		result = prime * result + extraDiscount;
 		result = prime * result + ((items == null) ? 0 : items.hashCode());
-		result = prime * result
-				+ ((orderDate == null) ? 0 : orderDate.hashCode());
+		result = prime * result + ((orderDate == null) ? 0 : orderDate.hashCode());
 		result = prime * result + orderId;
 		result = prime * result + orderPrice;
 		result = prime * result + paiedPrice;
@@ -91,6 +100,7 @@ public class Order {
 		result = prime * result + shippingCost;
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -100,6 +110,8 @@ public class Order {
 		if (getClass() != obj.getClass())
 			return false;
 		Order other = (Order) obj;
+		if (customerId != other.customerId)
+			return false;
 		if (extraDiscount != other.extraDiscount)
 			return false;
 		if (items == null) {
@@ -124,12 +136,11 @@ public class Order {
 			return false;
 		return true;
 	}
+
 	@Override
 	public String toString() {
-		return "Order [orderId=" + orderId + ", items=" + items
-				+ ", shippingCost=" + shippingCost + ", extraDiscount="
-				+ extraDiscount + ", orderPrice=" + orderPrice
-				+ ", paiedPrice=" + paiedPrice + ", recallPrice=" + recallPrice
-				+ ", orderDate=" + orderDate + "]";
+		return "Order [orderId=" + orderId + ", customerId=" + customerId + ", items=" + items + ", shippingCost="
+				+ shippingCost + ", extraDiscount=" + extraDiscount + ", orderPrice=" + orderPrice + ", paiedPrice="
+				+ paiedPrice + ", recallPrice=" + recallPrice + ", orderDate=" + orderDate + "]";
 	}
 }

@@ -141,7 +141,7 @@
 			<c:forEach var="customerPack" items="${customerPacks}">
 			<div class="table-container">
 					<div class="list-header">
-						<span>${customerPack.key}</span>
+						<span class="customerId" >${customerPack.key}</span>
 						<span class="total-order-quantities">${customerPack.quantity}</span>
 						<span class="total-order-prices">${customerPack.price}</span>
 						<span><button class="tableOpenBtn">상세내역</button></span>
@@ -301,8 +301,11 @@
 		
 		function shippingOrder(e) {
 			var tableContainer = e.target.parentNodeSelector(".table-container");
+			var customerId = tableContainer.querySelector(".customerId").textContent;
 			var shippingCost = tableContainer.querySelector(".ship-cost").value;
+			if (shippingCost == "") shippingCost = 0;
 			var extraDC = tableContainer.querySelector(".extra-dc").value;
+			if (extraDC == "") shippingCost = 0;
 			var orderPrice = tableContainer.querySelector(".order-price").textContent;
 			var itemContainers = tableContainer.querySelectorAll(".item-container");
 			var json = "{";
@@ -313,6 +316,7 @@
 				json += "{itemId:"+itemId+"}";
 			}	
 			json +="],";
+			json += " customerId:"+customerId+",";
 			json += " shippingCost:"+shippingCost+",";
 			json += " extraDiscount:"+extraDC+",";
 			json += " orderPrice:"+orderPrice+",";

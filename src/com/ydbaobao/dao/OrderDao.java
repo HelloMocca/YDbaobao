@@ -34,15 +34,16 @@ public class OrderDao extends JdbcDaoSupport {
 
 	public int createOrder(final Order order) {
 		KeyHolder keyHolder = new GeneratedKeyHolder();
-		final String sql = "insert into ORDERS (shippingCost, extraDiscount, orderPrice, paiedPrice, orderDate) values(?, ?, ?, ?, ?)";
+		final String sql = "insert into ORDERS (customerId, shippingCost, extraDiscount, orderPrice, paiedPrice, orderDate) values(?, ?, ?, ?, ?, ?)";
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
 				PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-				ps.setInt(1, order.getShippingCost());
-				ps.setInt(2, order.getExtraDiscount());
-				ps.setInt(3, order.getOrderPrice());
-				ps.setInt(4, order.getPaiedPrice());
-				ps.setString(5, CommonUtil.getDatetime());
+				ps.setString(1, order.getCustomerId());
+				ps.setInt(2, order.getShippingCost());
+				ps.setInt(3, order.getExtraDiscount());
+				ps.setInt(4, order.getOrderPrice());
+				ps.setInt(5, order.getPaiedPrice());
+				ps.setString(6, CommonUtil.getDatetime());
 				return ps;
 			}
 		}, keyHolder);
@@ -59,18 +60,47 @@ public class OrderDao extends JdbcDaoSupport {
 			public Order mapRow(ResultSet rs, int rowNum) throws SQLException {
 				return new Order(
 						rs.getInt("orderId"),
+						rs.getString("customerId"),
 						rs.getInt("shippingCost"),
 						rs.getInt("extraDiscount"),
 						rs.getInt("orderPrice"),
 						rs.getInt("paiedPrice"),
 						rs.getInt("recallPrice"),
-						rs.getString("orderDate"));
+						rs.getString("orderDate").split(" ")[0]);
 			}
 		};
 		try {
-			return getJdbcTemplate().query(sql, rm, date);
+			return getJdbcTemplate().query(sql, rm);
 		} catch (EmptyResultDataAccessException e) {
 			return null;
 		}
+	}
+
+	public List<Order> readOrdersByCustomerId(String customerId) {
+		String sql = "select * from ORDERS where customerId = ?";
+		RowMapper<Order> rm = new RowMapper<Order>() {
+			@Override
+			public Order mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return new Order(
+						rs.getInt("orderId"),
+						rs.getString("customerId"),
+						rs.getInt("shippingCost"),
+						rs.getInt("extraDiscount"),
+						rs.getInt("orderPrice"),
+						rs.getInt("paiedPrice"),
+						rs.getInt("recallPrice"),
+						rs.getString("orderDate").split(" ")[0]);
+			}
+		};
+		try {
+			return getJdbcTemplate().query(sql, rm, customerId);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
+	}
+	
+	public int deleteOrderByOrderId(int orderId) {
+		String sql = "delete from ORDERS where orderId = ?";
+		return getJdbcTemplate().update(sql, orderId);
 	}
 }

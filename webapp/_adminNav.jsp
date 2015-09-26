@@ -15,7 +15,7 @@
 		<hr />
 		<li><a href="/admin/orders/brands"><span>사입대기</span></a></li>
 		<li><a href="/admin/orders/accepted"><span>배송대기</span></a></li>
-		<li><a href="/admin/orders/customers"><span>완료된주문</span></a></li>
+		<li><a href="/admin/orders/shipped"><span>완료된주문</span></a></li>
 		<hr />
 		<li><a href="/admin/indexImages"><span>첫화면관리</span></a></li>
 		<li><a href="/admin/config"><span>쇼핑몰설정</span></a></li>
