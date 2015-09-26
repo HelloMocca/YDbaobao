@@ -26,6 +26,18 @@ table tfoot {
 table tfoot td{
 	padding:5px 0;
 }
+label {
+	display:inline-block;
+	width:85px;
+	font-size:13px;
+	background:#454545;
+	color:white;
+	padding:5px;
+}
+form {
+	padding:5px;
+	outline:1px solid #ccc;
+}
 </style>
 </head>
 <body>
@@ -35,12 +47,32 @@ table tfoot td{
 	<div id="container" style="width:1200px">
 		<%@ include file="./_adminNav.jsp"%>
 		<div id="content">
-			<h1>${date}</h1>
+			<c:choose>
+				<c:when test="${not empty date}"><h1>${date}</h1></c:when>
+				<c:otherwise><h1>${customerId}</h1></c:otherwise>
+			</c:choose>
+			<div>
+				<form action="/admin/orders/shipped/" method="get">
+					<label for="searchByDate">날짜별 조회</label>
+					<input id="searchByDate" name="date" type="text" />
+					<input type="submit" value="조회">
+				</form>
+			</div>
+			<div>
+				<form action="/admin/orders/shipped/customerid" method="get">
+					<label for="searchByCustomerId">주문자별 조회</label>
+					<input id="searchByCustomerId" name="customerId" type="text" />
+					<input type="submit" value="조회">
+				</form>
+			</div>
 			<table style="width:100%;">
 				<thead>
 					<tr>
 						<th>#</th>
-						<th>주문자</th>
+						<c:choose>
+							<c:when test="${not empty date}"><th>배송일</th></c:when>
+							<c:otherwise><th>주문자</th></c:otherwise>
+						</c:choose>
 						<th>배송비</th>
 						<th>추가할인</th>
 						<th>청구금액</th>
@@ -53,7 +85,10 @@ table tfoot td{
 					<c:forEach var="order" items="${orders}">
 					<tr class="order-container" data-id="${order.orderId}">
 						<td>${order.orderId}</td>
-						<td>${order.customerId}</td>
+						<c:choose>
+							<c:when test="${not empty date}"><td>${order.orderDate}</td></c:when>
+							<c:otherwise><td>${order.customerId}</td></c:otherwise>
+						</c:choose>
 						<td class="shippingCost">${order.shippingCost}</td>
 						<td class="extraDiscount">${order.extraDiscount}</td>
 						<td class="orderPrice">${order.orderPrice}</td>

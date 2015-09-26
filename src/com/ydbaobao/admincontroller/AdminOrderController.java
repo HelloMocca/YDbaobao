@@ -149,7 +149,7 @@ public class AdminOrderController {
 	 * @param date format(yyyy-dd-mm)
 	 * @return shipmentManager Page
 	 */
-	@RequestMapping(value= "/shipped/read/{date}", method = RequestMethod.GET)
+	@RequestMapping(value= "/shipped/orderdate/{date}", method = RequestMethod.GET)
 	public String shippedOrderByDate(@PathVariable String date, Model model) {
 		model.addAttribute("date", date);
 		model.addAttribute("orders", orderService.readOrdersByDate(date));
@@ -169,11 +169,11 @@ public class AdminOrderController {
 		return "shipmentManager";
 	}
 	
-	@RequestMapping(value = "", method = RequestMethod.GET)
-	public String shippedOrderByCustomer(@PathVariable String customerId, Model model) {
+	@RequestMapping(value = "/shipped/customerid", method = RequestMethod.GET)
+	public String shippedOrderByCustomer(@RequestParam String customerId, Model model) {
 		model.addAttribute("customerId", customerId);
 		model.addAttribute("orders", orderService.readOrdersByCustomerId(customerId));
-		return "shipmentManagerByCustomer";
+		return "shipmentManager";
 	}
 	
 	/**
