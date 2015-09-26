@@ -18,6 +18,8 @@ import com.ydbaobao.model.Payment;
 import com.ydbaobao.service.ItemService;
 import com.ydbaobao.service.PaymentService;
 
+
+//!!!DEPRECATED!!!!
 @Controller
 @RequestMapping("/admin/payment")
 public class AdminPaymentController {
@@ -49,7 +51,7 @@ public class AdminPaymentController {
 
 	@RequestMapping(value = "/receipt/{paymentId}")
 	public String requestReceiptByPaymentId(@PathVariable int paymentId, Model model) {
-		model.addAttribute("items", itemService.readOrderedItemsByPaymentId(paymentId));
+		//model.addAttribute("items", itemService.readOrderedItemsByPaymentId(paymentId));
 		return "receipt";
 	}
 	

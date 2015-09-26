@@ -46,7 +46,7 @@ public class AdminOrderController {
 	/**
 	 * 주문된 브랜드의 리스트 출력 페이지 요청
 	 * @param model
-	 * @return
+	 * @return orderManagerBrandList Page
 	 */
 	@RequestMapping(value = "/brands", method = RequestMethod.GET)
 	public String manageOrderByBrands(Model model) {
@@ -58,7 +58,7 @@ public class AdminOrderController {
 	 * brandId에 해당하는 브랜드의 주문 목록 페이지 요청
 	 * @param brandId
 	 * @param model
-	 * @return
+	 * @return orderManagerByBrand Page
 	 */
 	@RequestMapping(value = "/brand/{brandId}", method = RequestMethod.GET)
 	public String manageOrderByBrandId(@PathVariable int brandId, Model model) {
@@ -69,7 +69,7 @@ public class AdminOrderController {
 	/**
 	 * 모든 유저에 대한 주문리스트 및 페이지 요청
 	 * @param model
-	 * @return
+	 * @return orderMAnagerByCustomer Page
 	 */
 	@RequestMapping(value = "/customers", method = RequestMethod.GET)
 	public String manageOrderByCustomers(Model model) {
@@ -81,7 +81,7 @@ public class AdminOrderController {
 	 * customerId를 받아 해당 유저의 주문목록 리스트 및 페이지 요청
 	 * @param customerId
 	 * @param model
-	 * @return
+	 * @return orderManager Page
 	 */
 	@RequestMapping(value = "/customer/{customerId}", method = RequestMethod.GET)
 	public String manageCustomerOrder(@PathVariable String customerId, Model model) {
@@ -94,7 +94,7 @@ public class AdminOrderController {
 	 * @param itemList [처리(변동)될 Item의 Id 배열]
 	 * @param sizeList [각 Item에서 변동될 Size 배열]
 	 * @param quantityList [각 Item에서 변동될 수량 배열]
-	 * @return 성공처리여부
+	 * @return OK or FAIL
 	 */
 	@RequestMapping(value = "/accept", method = RequestMethod.POST)
 	public @ResponseBody String acceptOrder(@RequestParam String itemList) {
@@ -112,7 +112,7 @@ public class AdminOrderController {
 	/**
 	 * 사입된 주문 관리
 	 * @param model
-	 * @return
+	 * @return acceptedOrderManager Page
 	 */
 	@RequestMapping(value = "/accepted")
 	public String acceptedOrder(Model model) {
@@ -121,6 +121,11 @@ public class AdminOrderController {
 		return "acceptedOrderManager";
 	}
 	
+	/**
+	 * 사입 취소
+	 * @param itemId
+	 * @return OK or FAIL
+	 */
 	@RequestMapping(value = "/cancelaccept/{itemId}")
 	public @ResponseBody String cancelAccept(@PathVariable int itemId) {
 		Item item = itemService.readItemByItemId(itemId);
@@ -129,20 +134,24 @@ public class AdminOrderController {
 	
 	/**
 	 * 주문 배송처리
-	 * @return
+	 * @return OK or FAIL
 	 */
 	@RequestMapping(value = "/shipping", method = RequestMethod.POST)
 	public @ResponseBody String shippingOrder(@RequestParam String order) {
 		Type collectionType = new TypeToken<Order>(){}.getType();
 		Order newOrder = new Gson().fromJson(order, collectionType);
+		System.out.println(newOrder);
 		return (orderService.createOrder(newOrder)) ? Message.OK : Message.FAIL;
 	}
 	
 	/**
 	 * 배송처리된 주문관리
+	 * @param date format(yyyy-dd-mm)
+	 * @return shippedOrderManager Page
 	 */
-	public String shippedOrder(Model model) {
-		//model.addAttribute("items", itemService.readShippedItemsByDate());
+	@RequestMapping(value="/shipped/{date}", method = RequestMethod.GET)
+	public String shippedOrder(@PathVariable String date, Model model) {
+		model.addAttribute("items", orderService.readOrdersByDate(date));
 		return "shippedOrderManager";
 	}
 	

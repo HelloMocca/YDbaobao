@@ -22,7 +22,6 @@ import org.springframework.stereotype.Repository;
 import com.ydbaobao.model.Brand;
 import com.ydbaobao.model.Customer;
 import com.ydbaobao.model.Item;
-import com.ydbaobao.model.Payment;
 import com.ydbaobao.model.Product;
 import com.ydbaobao.model.Quantity;
 
@@ -263,8 +262,8 @@ public class ItemDao extends JdbcDaoSupport {
 		}
 	}
 
-	public List<Item> readItemsByPaymentId(int paymentId) {
-		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C, PAYMENTS D where A.itemStatus = 'P' AND A.productId = B.productId AND B.brandId = C.brandId AND A.paymentId = D.paymentId AND D.paymentId = ?";
+	public List<Item> readItemsByOrderId(int orderId) {
+		String sql = "select * from ITEMS A, PRODUCTS B, BRANDS C where A.itemStatus = 'P' AND A.productId = B.productId AND B.brandId = C.brandId AND A.orderId = ?";
 		RowMapper<Item> rm = new RowMapper<Item>() {
 			@Override
 			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -275,11 +274,11 @@ public class ItemDao extends JdbcDaoSupport {
 								rs.getInt("productPrice"), rs.getString("productImage"), 
 								rs.getString("productSize"), rs.getInt("isSoldout"), 
 						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
-						rs.getInt("price"), new Payment(rs.getInt("paymentId"), new Customer(rs.getString("customerId")), rs.getString("paymentType"), rs.getInt("amount"), rs.getString("paymentDate")));
+						rs.getInt("price"));
 			}
 		};
 		try {
-			return getJdbcTemplate().query(sql, rm, paymentId);
+			return getJdbcTemplate().query(sql, rm, orderId);
 		} catch (EmptyResultDataAccessException e) {
 			return null;
 		}
@@ -302,7 +301,7 @@ public class ItemDao extends JdbcDaoSupport {
 								rs.getInt("productPrice"), rs.getString("productImage"), 
 								rs.getString("productSize"), rs.getInt("isSoldout"), 
 						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
-						rs.getInt("price"), null);
+						rs.getInt("price"));
 			}
 		};
 		try {
@@ -329,7 +328,7 @@ public class ItemDao extends JdbcDaoSupport {
 								rs.getInt("productPrice"), rs.getString("productImage"), 
 								rs.getString("productSize"), rs.getInt("isSoldout"), 
 						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
-						rs.getInt("price"), null, 
+						rs.getInt("price"),
 						new Quantity(rs.getInt("quantityId"), rs.getInt("itemId"), rs.getString("size"), rs.getInt("value")));
 			}
 		};
@@ -385,7 +384,7 @@ public class ItemDao extends JdbcDaoSupport {
 								rs.getInt("productPrice"), rs.getString("productImage"), 
 								rs.getString("productSize"), rs.getInt("isSoldout"), 
 						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
-						rs.getInt("price"), null);
+						rs.getInt("price"));
 			}
 		};
 		try {
@@ -395,6 +394,16 @@ public class ItemDao extends JdbcDaoSupport {
 		}
 	}
 	
+	/**
+	 * Item을 배송상태로 전환
+	 * @param itemId
+	 * @param orderId
+	 * @return
+	 */
+	public boolean updateItemToShipmentStatus(int itemId, int orderId) {
+		String sql = "update ITEMS set itemStatus = '"+Item.SHIPMENT+"', orderId = ? where itemId = ?";
+		return (getJdbcTemplate().update(sql, orderId, itemId) == 1) ? true : false;
+	}
 	/**
 	 * Item의 상태를 변환
 	 * 카트 		: "I"
@@ -536,7 +545,7 @@ public class ItemDao extends JdbcDaoSupport {
 								rs.getInt("productPrice"), rs.getString("productImage"), 
 								rs.getString("productSize"), rs.getInt("isSoldout"), 
 						new Brand(rs.getInt("brandId"), rs.getString("brandName"))), rs.getString("itemStatus"), 
-						rs.getInt("price"), null);
+						rs.getInt("price"));
 			}
 		};
 		try {

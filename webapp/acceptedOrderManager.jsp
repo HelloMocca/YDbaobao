@@ -157,7 +157,7 @@
 							<th> </th>
 						</tr>
 						<c:forEach var="item" items="${customerPack.items}">
-							<tr class="item-container" data-id="${item.itemId}">
+							<tr id="item_${item.itemId}" class="item-container" data-id="${item.itemId}">
 								<td><span class="item-customer">${item.product.brand.brandName}</span></td>
 								<td class="item-image-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><img class="item-image" src="/image/products/${item.product.productImage}"></a></td>
 								<td class="item-name-container"><a href="/shop/products/${item.product.productId}" style="text-decoration:none"><span class="item-name">${item.product.productName}</span></a></td>
@@ -301,10 +301,36 @@
 		
 		function shippingOrder(e) {
 			var tableContainer = e.target.parentNodeSelector(".table-container");
+			var shippingCost = tableContainer.querySelector(".ship-cost").value;
+			var extraDC = tableContainer.querySelector(".extra-dc").value;
+			var orderPrice = tableContainer.querySelector(".order-price").textContent;
 			var itemContainers = tableContainer.querySelectorAll(".item-container");
+			var json = "{";
+			json += " items:[";
 			for (var i = 0; i < itemContainers.length; i++) {
-				console.log(itemContainers[i].getAttribute("data-id"));
-			}
+				if (i != 0) json += ", ";
+				var itemId = itemContainers[i].getAttribute("data-id");
+				json += "{itemId:"+itemId+"}";
+			}	
+			json +="],";
+			json += " shippingCost:"+shippingCost+",";
+			json += " extraDiscount:"+extraDC+",";
+			json += " orderPrice:"+orderPrice+",";
+			json += " paiedPrice:0,";
+			json += " recallPrice:0}";
+			console.log(json);
+			ydbaobao.ajax({
+				method: "post",
+				url: "/admin/orders/shipping",
+				param:"order="+json,
+				success: function(req){
+					if (req.responseText == "OK") {
+						alert("배송처리 되었습니다.");
+					} else {
+						alert("배송처리에 실패했습니다.");
+					}
+				}
+			});
 		}
 		
 		function rejectItem(e) {
@@ -316,8 +342,9 @@
 				success: function(req){
 					if (req.responseText == "OK") {
 						alert("사입이 취소되었습니다.");
+						e.target.parentNodeSelector(".item-container").remove();
 					} else {
-						alert("사입 취소를 실패했습니다.")
+						alert("사입 취소를 실패했습니다.");
 					}
 				}
 			});

@@ -25,11 +25,16 @@ public class OrderService {
 	private ItemDao itemDao;
 	
 	public boolean createOrder(Order order) {
-		orderDao.createOrder(order);
+		int orderId = orderDao.createOrder(order);
 		List<Item> items = order.getItems();
 		for (Item item : items) {
-			if (!itemDao.updateItemStatus(item.getItemId(), "P")) return false;
+			if (!itemDao.updateItemToShipmentStatus(item.getItemId(), orderId)) return false;
 		}
 		return true;
+	}
+
+	public List<Order> readOrdersByDate(String date) {
+		
+		return null;
 	}
 }

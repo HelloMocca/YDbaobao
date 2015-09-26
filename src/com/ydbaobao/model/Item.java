@@ -10,7 +10,7 @@ public class Item {
 	private String itemStatus;
 	private int price;
 	private List<Quantity> quantities;
-	private Payment payment;
+	private int orderId;
 	/**
 	 * 카트 		: "I"
 	 * 주문요청 	: "S"
@@ -45,33 +45,31 @@ public class Item {
 		this.price = price;
 	}
 	
-	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Payment payment) {
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, int orderId) {
 		this.itemId = itemId;
 		this.customer = customer;
 		this.product = product;
 		this.itemStatus = itemStatus;
 		this.price = price;
-		this.payment = payment;
+		this.orderId = orderId;
 	}
 	
-	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Payment payment, Quantity quantity) {
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Quantity quantity) {
 		this.itemId = itemId;
 		this.customer = customer;
 		this.product = product;
 		this.itemStatus = itemStatus;
 		this.price = price;
-		this.payment = payment;
 		quantities = new ArrayList<Quantity>();
 		this.quantities.add(quantity);
 	}
 	
-	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, Payment payment, List<Quantity> quantities) {
+	public Item(int itemId, Customer customer, Product product, String itemStatus, int price, List<Quantity> quantities) {
 		this.itemId = itemId;
 		this.customer = customer;
 		this.product = product;
 		this.itemStatus = itemStatus;
 		this.price = price;
-		this.payment = payment;
 		this.quantities = quantities;
 	}
 
@@ -123,12 +121,12 @@ public class Item {
 		this.quantities = quantities;
 	}
 	
-	public Payment getPayment() {
-		return payment;
+	public int getOrderId() {
+		return orderId;
 	}
 	
-	public void setPayment(Payment payment) {
-		this.payment = payment;
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
 	}
 	
 	public String getCustomerId() {
@@ -183,6 +181,6 @@ public class Item {
 	@Override
 	public String toString() {
 		return "Item [itemId=" + itemId + ", customer=" + customer + ", product=" + product + ", itemStatus="
-				+ itemStatus + ", price=" + price + ", quantities=" + quantities + ", payment=" + payment + "]";
+				+ itemStatus + ", price=" + price + ", quantities=" + quantities + ", orderId=" + orderId + "]";
 	}
 }

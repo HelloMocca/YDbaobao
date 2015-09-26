@@ -12,6 +12,11 @@ public class Order {
 	private int recallPrice;
 	private String orderDate;
 	
+	public Order(int shippingCost, int extraDiscount, int orderPrice, int paiedPrice, int recallPrice,
+			String orderDate) {
+		this(0, shippingCost, extraDiscount, orderPrice, paiedPrice, recallPrice, orderDate);
+	}
+	
 	public Order(int orderId, int shippingCost, int extraDiscount, int orderPrice, int paiedPrice, int recallPrice,
 			String orderDate) {
 		this.orderId = orderId;

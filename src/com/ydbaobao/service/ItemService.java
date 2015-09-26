@@ -183,9 +183,9 @@ public class ItemService {
 		return item;
 	}
 
-	public List<Item> readOrderedItemsByPaymentId(int paymentId) {
-		return itemDao.readItemsByPaymentId(paymentId);
-	}
+//	public List<Item> readOrderedItemsByPaymentId(int paymentId) {
+//		return itemDao.readItemsByPaymentId(paymentId);
+//	}
 	
 	/**
 	 * 주문취소
