@@ -1,1 +1,0 @@
-ALTER TABLE ADMINCONFIG add column adminPassword varchar(20) default "1111";

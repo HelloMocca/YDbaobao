@@ -1,1 +1,0 @@
-ALTER TABLE PRODUCTS MODIFY COLUMN productImage varchar(200); 

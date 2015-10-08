@@ -1,1 +1,0 @@
-ALTER TABLE ITEMS add column price int;
