@@ -75,7 +75,7 @@ public class ItemDao extends JdbcDaoSupport {
 			@Override
 			public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
 				return new Item(rs.getInt("itemId"),
-						new Customer(rs.getString("customerId"), rs.getString("customerName"), rs.getString("gradeId")),
+						new Customer(rs.getString("customerId"), rs.getString("customerName"), rs.getString("customerGrade")),
 						new Product(rs.getInt("productId"), rs.getString("productName"), rs.getInt("productPrice"), rs.getString("productImage"), rs.getString("productSize"), rs.getInt("isSoldout"),
 								new Brand(rs.getInt("brandId"), rs.getString("brandName"), rs.getInt("discount_1"), rs.getInt("discount_2"),
 										rs.getInt("discount_3"), rs.getInt("discount_4"), rs.getInt("discount_5"))),

@@ -70,8 +70,8 @@ form {
 					<tr>
 						<th>#</th>
 						<c:choose>
-							<c:when test="${not empty date}"><th>배송일</th></c:when>
-							<c:otherwise><th>주문자</th></c:otherwise>
+							<c:when test="${not empty date}"><th>주문자</th></c:when>
+							<c:otherwise><th>배송일</th></c:otherwise>
 						</c:choose>
 						<th>배송비</th>
 						<th>추가할인</th>
@@ -86,8 +86,8 @@ form {
 					<tr class="order-container" data-id="${order.orderId}">
 						<td>${order.orderId}</td>
 						<c:choose>
-							<c:when test="${not empty date}"><td>${order.orderDate}</td></c:when>
-							<c:otherwise><td>${order.customerId}</td></c:otherwise>
+							<c:when test="${not empty date}"><td>${order.customerId}</td></c:when>
+							<c:otherwise><td>${order.orderDate}</td></c:otherwise>
 						</c:choose>
 						<td class="shippingCost">${order.shippingCost}</td>
 						<td class="extraDiscount">${order.extraDiscount}</td>

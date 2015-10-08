@@ -40,7 +40,7 @@ public class CustomerDao extends JdbcDaoSupport {
 						rs.getString("customerId"), 
 						rs.getString("customerName"), 
 						rs.getString("customerPassword"),
-						rs.getString("gradeId"),
+						rs.getString("customerGrade"),
 						rs.getString("customerPhone"),
 						rs.getString("customerEmail"),
 						rs.getString("customerAddress")
@@ -60,7 +60,7 @@ public class CustomerDao extends JdbcDaoSupport {
 	}
 	
 	public int updateCustomerGrade(Customer customer) {
-		String sql = "update CUSTOMERS set gradeId = ? where customerId = ?";
+		String sql = "update CUSTOMERS set customerGrade = ? where customerId = ?";
 		return getJdbcTemplate().update(sql, customer.getCustomerGrade(), customer.getCustomerId());		
 	}
 	
@@ -73,7 +73,7 @@ public class CustomerDao extends JdbcDaoSupport {
 						rs.getString("customerId"), 
 						rs.getString("customerName"), 
 						rs.getString("customerPassword"),
-						rs.getString("gradeId"),
+						rs.getString("customerGrade"),
 						rs.getString("customerPhone"),
 						rs.getString("customerEmail"),
 						rs.getString("customerAddress")
@@ -96,7 +96,7 @@ public class CustomerDao extends JdbcDaoSupport {
 						rs.getString("customerId"), 
 						rs.getString("customerName"), 
 						rs.getString("customerPassword"),
-						rs.getString("gradeId"),
+						rs.getString("customerGrade"),
 						rs.getString("customerPhone"),
 						rs.getString("customerEmail"),
 						rs.getString("customerAddress"),
@@ -113,7 +113,7 @@ public class CustomerDao extends JdbcDaoSupport {
 	 * @param customerId
 	 */
 	public void deleteCustomer(String customerId) {
-		String sql = "update CUSTOMERS set gradeId = 0, customerPhone='', customerEmail='', customerAddress='', customerUpdateDate=? where customerId = ?";
+		String sql = "update CUSTOMERS set customerGrade = 0, customerPhone='', customerEmail='', customerAddress='', customerUpdateDate=? where customerId = ?";
 		getJdbcTemplate().update(sql, CommonUtil.getDatetime(), customerId);
 		sql = "delete from ITEMS where customerId = ?";
 		getJdbcTemplate().update(sql, customerId);
@@ -134,7 +134,7 @@ public class CustomerDao extends JdbcDaoSupport {
 						rs.getString("customerId"), 
 						rs.getString("customerName"), 
 						rs.getString("customerPassword"),
-						rs.getString("gradeId"),
+						rs.getString("customerGrade"),
 						rs.getString("customerPhone"),
 						rs.getString("customerEmail"),
 						rs.getString("customerAddress"),
@@ -164,7 +164,7 @@ public class CustomerDao extends JdbcDaoSupport {
 						rs.getString("customerId"), 
 						rs.getString("customerName"), 
 						rs.getString("customerPassword"),
-						rs.getString("gradeId"),
+						rs.getString("customerGrade"),
 						rs.getString("customerPhone"),
 						rs.getString("customerEmail"),
 						rs.getString("customerAddress"),
@@ -190,7 +190,7 @@ public class CustomerDao extends JdbcDaoSupport {
 						rs.getString("customerId"), 
 						rs.getString("customerName"), 
 						rs.getString("customerPassword"),
-						rs.getString("gradeId"),
+						rs.getString("customerGrade"),
 						rs.getString("customerPhone"),
 						rs.getString("customerEmail"),
 						rs.getString("customerAddress"),

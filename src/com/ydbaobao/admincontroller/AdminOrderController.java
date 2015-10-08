@@ -141,7 +141,7 @@ public class AdminOrderController {
 	public @ResponseBody String shippingOrder(@RequestParam String order) {
 		Type collectionType = new TypeToken<Order>(){}.getType();
 		Order newOrder = new Gson().fromJson(order, collectionType);
-		return (orderService.createOrder(newOrder) < 0) ? Message.OK : Message.FAIL;
+		return (orderService.createOrder(newOrder) > 0) ? Message.OK : Message.FAIL;
 	}
 	
 	/**
